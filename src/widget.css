@@ -1,0 +1,12 @@
+.edm-widget {
+  min-height: 600px;
+  height: 600px;
+}
+
+.edm-widget_loading {
+  height: 518px;
+}
+
+.edm-widget_main {
+  height: 518px;
+}
