@@ -1,4 +1,7 @@
 import React from 'react';
+import cn from 'classnames';
+
+import * as bootstrapStyles from '../../../styles/bootstrap.module.scss';
 
 function Chart({value, maxFairPrice, maxGreatPrice}) {
   return (
@@ -291,7 +294,7 @@ function Chart({value, maxFairPrice, maxGreatPrice}) {
         dominantBaseline="middle"
         x="12.5%"
         y="120"
-        className="medium text-lowercase"
+        className={cn(bootstrapStyles.medium, bootstrapStyles['text-lowercase'])}
       >
         Great
       </text>
@@ -301,7 +304,7 @@ function Chart({value, maxFairPrice, maxGreatPrice}) {
         dominantBaseline="middle"
         x="50%"
         y="120"
-        className="medium text-lowercase"
+        className={cn(bootstrapStyles.medium, bootstrapStyles['text-lowercase'])}
       >
         Fair
       </text>
@@ -311,7 +314,7 @@ function Chart({value, maxFairPrice, maxGreatPrice}) {
         dominantBaseline="middle"
         x="87.5%"
         y="120"
-        className="medium text-lowercase"
+        className={cn(bootstrapStyles[bootstrapStyles.medium], bootstrapStyles['text-lowercase'])}
       >
         High
       </text>

@@ -1,6 +1,7 @@
 .edm-ext-widget {
   min-height: 800px;
   height: 800px;
+  color: #555 !important;
 }
 
 .edm-ext-widget_loading {
@@ -16,4 +17,8 @@
   right: 4rem;
   top: 4rem;
   width: 480px;
+}
+
+.edm-ext,
+.edm-ext * {
 }

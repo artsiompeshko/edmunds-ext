@@ -6,8 +6,8 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "css": ["/dist/index.237b3c92.css"],
-      "js": ["/dist/index.21849d96.js"]
+      "css": ["/dist/index.e83fb23f.css"],
+      "js": ["/dist/index.379dd93c.js"]
     }
   ]
 }

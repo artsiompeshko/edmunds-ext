@@ -1,18 +1,30 @@
 import React from 'react';
-import './inventory.css';
+import cn from 'classnames';
+import * as styles from './inventory.module.css';
+import * as bootstrapStyles from '../../styles/bootstrap.module.scss';
+import * as customStyles from '../../styles/custom.module.css';
 
 function Inventory({vehicle}) {
   return (
-    <div className="edm-ext-inventory p-2_5 mb-1">
-      <section className="vin-overview text-gray-darker text-gray-darker">
-        <div className="text-gray-darker mt-1 mt-md-1_25 medium">{vehicle.status}</div>
-        <h3 className="not-opaque text-black d-inline-block mb-0 fs-4">
+    <div
+      className={cn(styles['edm-ext-inventory'], customStyles['p-2_5'], bootstrapStyles['mb-1'])}
+    >
+      <section>
+        <div className={cn(bootstrapStyles['mt-1'])}>{vehicle.status}</div>
+        <h3
+          className={cn(
+            bootstrapStyles['text-black'],
+            bootstrapStyles['d-inline-block'],
+            bootstrapStyles['mb-0'],
+            bootstrapStyles['fs-4']
+          )}
+        >
           {vehicle.year} {vehicle.make} {vehicle.model}
         </h3>
-        <div className="font-weight-normal mb-1_25">
-          <span className="not-opaque text-black">{vehicle.style}</span>
-          <div className="small text-gray-darker mt-0_5">
-            <span className="mr-1">VIN: {vehicle.vin}</span>
+        <div>
+          <span className={cn(bootstrapStyles['text-black'])}>{vehicle.style}</span>
+          <div className={cn(bootstrapStyles.small)}>
+            <span>VIN: {vehicle.vin}</span>
           </div>
         </div>
       </section>

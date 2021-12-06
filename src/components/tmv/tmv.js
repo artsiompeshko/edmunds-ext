@@ -1,24 +1,46 @@
 import React from 'react';
+import cn from 'classnames';
 import {tmv} from '../../core/tmv/tmv';
 import Chart from './chart/chart';
-import './tmv.css';
+
+import * as bootstrapStyles from '../../styles/bootstrap.module.scss';
+import * as customStyles from '../../styles/custom.module.css';
+import * as styles from './tmv.module.css';
 
 function TmvReport({price, maxGreatPrice, maxFairPrice}) {
   const value = tmv.getValue({price, maxFairPrice, maxGreatPrice});
 
   return (
     <div>
-      <span className="fs-6 d-flex align-items-center justify-content-center size-20 text-capitalize">
+      <span
+        className={cn(
+          bootstrapStyles['fs-6'],
+          bootstrapStyles['d-flex'],
+          bootstrapStyles['align-items-center'],
+          bootstrapStyles['justify-content-center'],
+          customStyles['size-20'],
+          bootstrapStyles['text-capitalize']
+        )}
+      >
         Dealer Price
       </span>
       <p
         style={{color: tmv.COLORS[value]}}
-        className="font-weight-bold d-flex align-items-center justify-content-center size-20 text-capitalize"
+        className={cn(
+          bootstrapStyles['d-flex'],
+          bootstrapStyles['align-items-center'],
+          bootstrapStyles['justify-content-center'],
+          customStyles['size-20'],
+          bootstrapStyles['text-capitalize']
+        )}
       >
         {value} Price: ${price}
       </p>
       <Chart value={value} maxFairPrice={maxFairPrice} maxGreatPrice={maxGreatPrice} />
-      <p style={{borderColor: tmv.COLORS[value]}} className="edm-ext-tmv-text ps-2 mt-4">
+      <p
+        style={{borderColor: tmv.COLORS[value]}}
+        className={cn(styles['edm-ext-tmv-text'], bootstrapStyles['ps-2'], bootstrapStyles['mt-4'])}
+      >
         {tmv.getDescription(value)}
       </p>
     </div>

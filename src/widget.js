@@ -1,13 +1,17 @@
 import React, {useCallback, useEffect, useState} from 'react';
+import cn from 'classnames';
 import {api} from './api/api';
 import Header from './components/header/header';
 import Loading from './components/loading/loading';
-import './widget.css';
 import Cards from './components/cards/cards';
 import TmvReport from './components/tmv/tmv';
 import {TABS, TAB_KEY} from './core/tabs/tabs';
 import Tabs from './components/tabs/tabs';
 import Inventory from './components/inventory/inventory';
+
+import * as bootstrapStyles from './styles/bootstrap.module.scss';
+import * as customStyles from './styles/custom.module.css';
+import * as styles from './widget.module.css';
 
 export function Widget({vin}) {
   const [vehicle, setVehicle] = useState(null);
@@ -59,7 +63,7 @@ export function Widget({vin}) {
       return (
         <>
           <TmvReport maxFairPrice={100} maxGreatPrice={80} price={110} />
-          <p style={{color: '#333'}} className="fs-5">
+          <p style={{color: '#333'}} className={cn(bootstrapStyles['fs-5'])}>
             Other options near you:
           </p>
           <Cards invenotries={invenotries} />
@@ -75,7 +79,15 @@ export function Widget({vin}) {
   const renderContent = () => {
     if (loading) {
       return (
-        <div className="w-100 edm-ext-widget_loading d-flex align-items-center justify-content-center">
+        <div
+          className={cn(
+            bootstrapStyles['w-100'],
+            styles['edm-ext-widget_loading'],
+            bootstrapStyles['d-flex'],
+            bootstrapStyles['align-items-center'],
+            bootstrapStyles['justify-content-center']
+          )}
+        >
           <Loading />
         </div>
       );
@@ -83,7 +95,7 @@ export function Widget({vin}) {
 
     return (
       <div>
-        <div className="edm-ext-widget_tab">
+        <div>
           <div>
             <Inventory vehicle={vehicle} />
           </div>
@@ -98,10 +110,19 @@ export function Widget({vin}) {
   }
 
   return (
-    <div className="edm-ext edm-ext-floating">
-      <div className="shadow-sm rounded bg-white edm-ext-widget">
+    <div className={cn(bootstrapStyles['edm-ext'], styles['edm-ext-floating'], styles['edm-ext'])}>
+      <div
+        className={cn(
+          bootstrapStyles['shadow-sm'],
+          bootstrapStyles.rounded,
+          bootstrapStyles['bg-white'],
+          styles['edm-ext-widget']
+        )}
+      >
         <Header title="Edmunds helper" onClose={onClose} />
-        <main className="edm-ext-widget_main p-2_5">{renderContent()}</main>
+        <main className={cn(styles['edm-ext-widget_main'], customStyles['p-2_5'])}>
+          {renderContent()}
+        </main>
         <Tabs tabs={TABS} activeTabKey={activeTabKey} onTabClick={setActiveTabKey} />
       </div>
     </div>

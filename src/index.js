@@ -1,7 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './styles/bootstrap.scss';
-import './styles/custom.css';
 import {Widget} from './widget';
 import {vehicle} from './core/vehicle/vehicle';
 
