@@ -3,7 +3,7 @@ import cn from 'classnames';
 
 function Tabs({tabs, activeTabKey, onTabClick}) {
   return (
-    <ul className="nav nav-tabs edm-tabs">
+    <ul className="nav nav-tabs edm-ext-tabs">
       {tabs.map(tab => (
         <li key={tab.key} className="nav-item">
           <a

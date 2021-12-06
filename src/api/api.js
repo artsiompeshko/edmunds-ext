@@ -4,7 +4,8 @@ async function loadVehicle(vin) {
     model: 'A3',
     year: 2018,
     price: 43456,
-    trim: 'test'
+    trim: 'test',
+    vin
   };
 }
 

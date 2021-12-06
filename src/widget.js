@@ -7,6 +7,7 @@ import Cards from './components/cards/cards';
 import TmvReport from './components/tmv/tmv';
 import {TABS, TAB_KEY} from './core/tabs/tabs';
 import Tabs from './components/tabs/tabs';
+import Inventory from './components/inventory/inventory';
 
 export function Widget({vin}) {
   const [vehicle, setVehicle] = useState(null);
@@ -58,6 +59,9 @@ export function Widget({vin}) {
       return (
         <>
           <TmvReport maxFairPrice={100} maxGreatPrice={80} price={110} />
+          <p style={{color: '#333'}} className="fs-5">
+            Other options near you:
+          </p>
           <Cards invenotries={invenotries} />
         </>
       );
@@ -71,7 +75,7 @@ export function Widget({vin}) {
   const renderContent = () => {
     if (loading) {
       return (
-        <div className="w-100 edm-widget_loading d-flex align-items-center justify-content-center">
+        <div className="w-100 edm-ext-widget_loading d-flex align-items-center justify-content-center">
           <Loading />
         </div>
       );
@@ -79,7 +83,12 @@ export function Widget({vin}) {
 
     return (
       <div>
-        <div className="edm-widget_tab">{renderTab()}</div>
+        <div className="edm-ext-widget_tab">
+          <div>
+            <Inventory vehicle={vehicle} />
+          </div>
+          {renderTab()}
+        </div>
       </div>
     );
   };
@@ -89,10 +98,12 @@ export function Widget({vin}) {
   }
 
   return (
-    <div className="shadow-sm rounded bg-white edm-widget">
-      <Header title="Edmunds helper" onClose={onClose} />
-      <main className="edm-widget_main p-2_5">{renderContent()}</main>
-      <Tabs tabs={TABS} activeTabKey={activeTabKey} onTabClick={setActiveTabKey} />
+    <div className="edm-ext edm-ext-floating">
+      <div className="shadow-sm rounded bg-white edm-ext-widget">
+        <Header title="Edmunds helper" onClose={onClose} />
+        <main className="edm-ext-widget_main p-2_5">{renderContent()}</main>
+        <Tabs tabs={TABS} activeTabKey={activeTabKey} onTabClick={setActiveTabKey} />
+      </div>
     </div>
   );
 }

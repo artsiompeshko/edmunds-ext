@@ -18,7 +18,7 @@ function TmvReport({price, maxGreatPrice, maxFairPrice}) {
         {value} Price: ${price}
       </p>
       <Chart value={value} maxFairPrice={maxFairPrice} maxGreatPrice={maxGreatPrice} />
-      <p style={{borderColor: tmv.COLORS[value]}} className="edm-tmv-text ps-2 mt-4">
+      <p style={{borderColor: tmv.COLORS[value]}} className="edm-ext-tmv-text ps-2 mt-4">
         {tmv.getDescription(value)}
       </p>
     </div>

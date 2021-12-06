@@ -4,7 +4,7 @@ import './header.css';
 
 function Header({onClose}) {
   return (
-    <header className="navbar navbar-light bg-white edm-header border-bottom">
+    <header className="navbar navbar-light bg-white edm-ext-header">
       <div className="container-fluid">
         <div className="navbar-brand w-100 d-flex align-items-center justify-content-between me-0">
           <div className="d-flex align-items-center">

@@ -1,12 +1,19 @@
-.edm-widget {
-  min-height: 600px;
-  height: 600px;
+.edm-ext-widget {
+  min-height: 800px;
+  height: 800px;
 }
 
-.edm-widget_loading {
-  height: 518px;
+.edm-ext-widget_loading {
+  height: calc(800px - 36px - 45px);
 }
 
-.edm-widget_main {
-  height: 518px;
+.edm-ext-widget_main {
+  height: calc(800px - 36px - 45px);
+}
+
+.edm-ext-floating {
+  position: fixed;
+  right: 4rem;
+  top: 4rem;
+  width: 480px;
 }
