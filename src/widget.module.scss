@@ -1,0 +1,115 @@
+:global(.edm-widget-reset) {
+  .edm-ext-widget {
+    min-height: 800px;
+    height: 800px;
+    color: #555 !important;
+  }
+
+  .edm-ext-widget_loading {
+    height: calc(800px - 36px - 45px);
+  }
+
+  .edm-ext-widget_main {
+    overflow-y: auto;
+    height: calc(800px - 36px - 45px);
+  }
+
+  .edm-ext-floating {
+    position: fixed;
+    z-index: 2147483647;
+    right: 4rem;
+    top: 4rem;
+    width: 480px;
+  }
+
+  .edm-ext-inventory {
+    position: sticky;
+    top: 0;
+  }
+}
+
+:global(.edm-widget-reset) {
+  &,
+  *:not(iframe),
+  *:before,
+  *:after {
+    position: static;
+
+    visibility: visible;
+    float: none;
+    overflow: visible;
+
+    box-sizing: border-box;
+    width: auto;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    min-width: auto;
+    min-height: auto;
+    margin: 0;
+    padding: 0;
+
+    animation: none;
+    letter-spacing: normal;
+
+    border: 0;
+    border-radius: 0;
+    background: 0 0;
+    box-shadow: none;
+
+    font-weight: normal;
+    line-height: normal;
+
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+    -webkit-tap-highlight-color: transparent;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    text-transform: none;
+  }
+  div,
+  form,
+  li,
+  p,
+  ul {
+    display: block;
+  }
+  li {
+    list-style: none;
+  }
+  input:not([type='checkbox']),
+  textarea {
+    display: inline-block;
+
+    box-shadow: none;
+    outline: none;
+  }
+  a,
+  label,
+  span {
+    display: inline;
+  }
+
+  input[type='checkbox']:checked + span:before {
+    display: none;
+  }
+
+  button {
+    text-align: center;
+  }
+
+  /* For Firefox */
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+  /* Webkit browsers like Safari and Chrome */
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}

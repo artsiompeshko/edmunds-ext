@@ -1,13 +1,13 @@
 import React from 'react';
 import cn from 'classnames';
-import * as styles from './inventory.module.css';
+import * as styles from './inventory.module.scss';
 import * as bootstrapStyles from '../../styles/bootstrap.module.scss';
-import * as customStyles from '../../styles/custom.module.css';
+import * as customStyles from '../../styles/custom.module.scss';
 
 function Inventory({vehicle}) {
   return (
     <div
-      className={cn(styles['edm-ext-inventory'], customStyles['p-2_5'], bootstrapStyles['mb-1'])}
+      className={cn(styles['edm-ext-inventory'], customStyles['p-2_5'], bootstrapStyles['mb-2'])}
     >
       <section>
         <div className={cn(bootstrapStyles['mt-1'])}>{vehicle.status}</div>

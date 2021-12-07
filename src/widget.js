@@ -8,14 +8,16 @@ import TmvReport from './components/tmv/tmv';
 import {TABS, TAB_KEY} from './core/tabs/tabs';
 import Tabs from './components/tabs/tabs';
 import Inventory from './components/inventory/inventory';
+import Reviews from './components/reviews/reviews';
 
 import * as bootstrapStyles from './styles/bootstrap.module.scss';
-import * as customStyles from './styles/custom.module.css';
-import * as styles from './widget.module.css';
+import * as customStyles from './styles/custom.module.scss';
+import * as styles from './widget.module.scss';
 
 export function Widget({vin}) {
   const [vehicle, setVehicle] = useState(null);
   const [zipcode, setZipcode] = useState(null);
+  const [reviews, setReviews] = useState(null);
   const [invenotries, setInventories] = useState(null);
   const [loading, setLoading] = useState(true);
   const [opened, setOpened] = useState(true);
@@ -25,6 +27,12 @@ export function Widget({vin}) {
     const vehicle = await api.loadVehicle(vin);
 
     setVehicle(vehicle);
+  }
+
+  async function loadReviews() {
+    const reviews = await api.loadReviews(vin);
+
+    setReviews(reviews);
   }
 
   async function getZipCode() {
@@ -54,6 +62,10 @@ export function Widget({vin}) {
     }
   }, [vehicle, zipcode]);
 
+  useEffect(() => {
+    loadReviews();
+  }, []);
+
   const onClose = useCallback(() => {
     setOpened(false);
   }, [setOpened]);
@@ -63,7 +75,13 @@ export function Widget({vin}) {
       return (
         <>
           <TmvReport maxFairPrice={100} maxGreatPrice={80} price={110} />
-          <p style={{color: '#333'}} className={cn(bootstrapStyles['fs-5'])}>
+          <p
+            className={cn(
+              bootstrapStyles['fs-5'],
+              bootstrapStyles['mt-4'],
+              bootstrapStyles['mb-2']
+            )}
+          >
             Other options near you:
           </p>
           <Cards invenotries={invenotries} />
@@ -72,7 +90,11 @@ export function Widget({vin}) {
     }
 
     if (activeTabKey === TAB_KEY.REVIEWS) {
-      return <>REVIEWS</>;
+      return (
+        <>
+          <Reviews reviews={reviews} />
+        </>
+      );
     }
   };
 
@@ -96,7 +118,7 @@ export function Widget({vin}) {
     return (
       <div>
         <div>
-          <div>
+          <div className={styles['edm-ext-inventory']}>
             <Inventory vehicle={vehicle} />
           </div>
           {renderTab()}
@@ -110,20 +132,31 @@ export function Widget({vin}) {
   }
 
   return (
-    <div className={cn(bootstrapStyles['edm-ext'], styles['edm-ext-floating'], styles['edm-ext'])}>
+    <div className="edm-widget-reset">
       <div
-        className={cn(
-          bootstrapStyles['shadow-sm'],
-          bootstrapStyles.rounded,
-          bootstrapStyles['bg-white'],
-          styles['edm-ext-widget']
-        )}
+        className={cn(bootstrapStyles['edm-ext'], styles['edm-ext-floating'], styles['edm-ext'])}
       >
-        <Header title="Edmunds helper" onClose={onClose} />
-        <main className={cn(styles['edm-ext-widget_main'], customStyles['p-2_5'])}>
-          {renderContent()}
-        </main>
-        <Tabs tabs={TABS} activeTabKey={activeTabKey} onTabClick={setActiveTabKey} />
+        <div
+          className={cn(
+            bootstrapStyles.shadow,
+            bootstrapStyles.rounded,
+            bootstrapStyles['bg-white'],
+            bootstrapStyles['overflow-hidden'],
+            styles['edm-ext-widget']
+          )}
+        >
+          <Header title="Edmunds helper" onClose={onClose} />
+          <main
+            className={cn(
+              styles['edm-ext-widget_main'],
+              customStyles['p-2_5'],
+              bootstrapStyles['pt-0']
+            )}
+          >
+            {renderContent()}
+          </main>
+          <Tabs tabs={TABS} activeTabKey={activeTabKey} onTabClick={setActiveTabKey} />
+        </div>
       </div>
     </div>
   );

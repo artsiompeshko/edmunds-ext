@@ -1,7 +1,7 @@
 import React from 'react';
 import cn from 'classnames';
 import logo from 'bundle-text:./logo.svg';
-import * as styles from './header.module.css';
+import * as styles from './header.module.scss';
 import * as bootstrapStyles from '../../styles/bootstrap.module.scss';
 
 function Header({onClose}) {
@@ -38,7 +38,7 @@ function Header({onClose}) {
                 bootstrapStyles['p-0']
               )}
             >
-              Edmunds Hint
+              Edmunds Guide
             </h3>
           </div>
           <button

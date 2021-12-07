@@ -12,7 +12,7 @@ function Chart({value, maxFairPrice, maxGreatPrice}) {
       role="img"
       aria-label="Pricing chart"
       id="3581056817859121pricing-chart-svg"
-      style={{maxWidth: '559px'}}
+      style={{maxWidth: '559px', overflow: 'hidden'}}
     >
       <defs>
         <linearGradient

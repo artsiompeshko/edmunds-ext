@@ -4,8 +4,8 @@ import {tmv} from '../../core/tmv/tmv';
 import Chart from './chart/chart';
 
 import * as bootstrapStyles from '../../styles/bootstrap.module.scss';
-import * as customStyles from '../../styles/custom.module.css';
-import * as styles from './tmv.module.css';
+import * as customStyles from '../../styles/custom.module.scss';
+import * as styles from './tmv.module.scss';
 
 function TmvReport({price, maxGreatPrice, maxFairPrice}) {
   const value = tmv.getValue({price, maxFairPrice, maxGreatPrice});

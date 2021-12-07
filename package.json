@@ -7,7 +7,8 @@
     "start": "parcel",
     "prebuild": "rm -rf dist .cache .parcel-cache",
     "build": "parcel build",
-    "lint": "eslint --fix '**/*.{ts,tsx,js}'"
+    "lint": "eslint --fix '**/*.{ts,tsx,js}'",
+    "zip": "gulp zip"
   },
   "author": "",
   "license": "ISC",
@@ -22,12 +23,15 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-promise": "^5.2.0",
     "eslint-plugin-react": "^7.27.1",
+    "gulp": "^4.0.2",
+    "gulp-zip": "^5.1.0",
     "parcel": "^2.0.1",
     "prettier": "^2.5.1"
   },
   "dependencies": {
     "classnames": "^2.3.1",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react-dom": "^17.0.2",
+    "react-stars": "^2.2.5"
   }
 }
