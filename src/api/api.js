@@ -1,3 +1,47 @@
+import {quantile} from 'd3-array';
+
+function calculateTmv(vehicles) {
+  if (!vehicles) {
+    return {};
+  }
+
+  if (vehicles.length < 10) {
+    return {};
+  }
+
+  const prices = vehicles.map(({displayPrice}) => +displayPrice);
+  prices.sort((a, b) => a - b);
+
+  return {
+    maxFairPrice: quantile(prices, 0.75),
+    maxGreatPrice: quantile(prices, 0.25)
+  };
+}
+
+async function loadData(vin) {
+  try {
+    const {zipCode} = await fetch(
+      'https://dev-dsg11-api.carcode.com/carcode/v1/ccapi/location'
+    ).then(response => response.json());
+    const data = await fetch(
+      `https://dev-dsg11-api.carcode.com/carcode/v1/ccapi/vin-decoder/${vin}?zipcode=${zipCode}`
+    ).then(response => response.json());
+
+    data.comparablePrices = data?.comparablePrices.filter(({displayPrice}) => displayPrice);
+
+    const result = {
+      vehicle: data.vinDecoderResponseDto,
+      similarVehicles: data.comparablePrices,
+      vehicleReview: data?.vehicleReviewResponseDto?.vehicleReview,
+      tmv: calculateTmv(data.comparablePrices)
+    };
+
+    return result;
+  } catch (e) {
+    return null;
+  }
+}
+
 async function loadVehicle(vin) {
   return {
     make: 'Audi',
@@ -122,6 +166,7 @@ async function loadReviews(vin) {
 }
 
 export const api = {
+  loadData,
   loadVehicle,
   getZipCode,
   loadSimilar,

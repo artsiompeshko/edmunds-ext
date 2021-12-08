@@ -14,56 +14,38 @@ import * as bootstrapStyles from './styles/bootstrap.module.scss';
 import * as customStyles from './styles/custom.module.scss';
 import * as styles from './widget.module.scss';
 
-export function Widget({vin}) {
+export function Widget({vin, price}) {
   const [vehicle, setVehicle] = useState(null);
-  const [zipcode, setZipcode] = useState(null);
-  const [reviews, setReviews] = useState(null);
+  const [review, setReview] = useState(null);
+  const [tmv, setTmv] = useState(null);
   const [invenotries, setInventories] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [opened, setOpened] = useState(true);
   const [activeTabKey, setActiveTabKey] = useState(TABS[0].key);
 
-  async function loadVehicle() {
-    const vehicle = await api.loadVehicle(vin);
+  async function loadData() {
+    const data = await api.loadData(vin);
 
-    setVehicle(vehicle);
-  }
+    if (!data) {
+      setLoading(false);
+      setError('Not enough data to display');
+    }
 
-  async function loadReviews() {
-    const reviews = await api.loadReviews(vin);
+    setVehicle({
+      vin,
+      displayPrice: price,
+      ...(data.vehicle || {})
+    });
+    setInventories(data.similarVehicles);
+    setReview(data.vehicleReview);
+    setTmv(data.tmv);
 
-    setReviews(reviews);
-  }
-
-  async function getZipCode() {
-    const zipcode = await api.getZipCode();
-
-    setZipcode(zipcode);
-  }
-
-  async function loadSimilar() {
-    const inventories = await api.loadSimilar({zip: zipcode, radius: 50, ...vehicle});
-
-    setInventories(inventories);
     setLoading(false);
   }
 
   useEffect(() => {
-    loadVehicle();
-  }, []);
-
-  useEffect(() => {
-    getZipCode();
-  }, []);
-
-  useEffect(() => {
-    if (zipcode && vehicle) {
-      loadSimilar();
-    }
-  }, [vehicle, zipcode]);
-
-  useEffect(() => {
-    loadReviews();
+    loadData();
   }, []);
 
   const onClose = useCallback(() => {
@@ -74,17 +56,14 @@ export function Widget({vin}) {
     if (activeTabKey === TAB_KEY.TMV) {
       return (
         <>
-          <TmvReport maxFairPrice={100} maxGreatPrice={80} price={110} />
+          <TmvReport {...tmv} price={vehicle.displayPrice} />
           <p
-            className={cn(
-              bootstrapStyles['fs-5'],
-              bootstrapStyles['mt-4'],
-              bootstrapStyles['mb-2']
-            )}
+            style={{fontSize: '20px', color: '#333'}}
+            className={cn(bootstrapStyles['mt-4'], bootstrapStyles['mb-2'])}
           >
             Other options near you:
           </p>
-          <Cards invenotries={invenotries} />
+          <Cards invenotries={invenotries} inventory={vehicle} />
         </>
       );
     }
@@ -92,7 +71,7 @@ export function Widget({vin}) {
     if (activeTabKey === TAB_KEY.REVIEWS) {
       return (
         <>
-          <Reviews reviews={reviews} />
+          <Reviews review={review} />
         </>
       );
     }
@@ -149,9 +128,10 @@ export function Widget({vin}) {
           <main
             className={cn(
               styles['edm-ext-widget_main'],
-              customStyles['p-2_5'],
+              customStyles['p-widget'],
               bootstrapStyles['pt-0']
             )}
+            style={{paddingTop: '0'}}
           >
             {renderContent()}
           </main>

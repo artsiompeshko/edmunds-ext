@@ -4,33 +4,34 @@ import {tmv} from '../../core/tmv/tmv';
 import Chart from './chart/chart';
 
 import * as bootstrapStyles from '../../styles/bootstrap.module.scss';
-import * as customStyles from '../../styles/custom.module.scss';
 import * as styles from './tmv.module.scss';
 
 function TmvReport({price, maxGreatPrice, maxFairPrice}) {
+  if (!price || !maxGreatPrice || !maxFairPrice) {
+    return null;
+  }
+
   const value = tmv.getValue({price, maxFairPrice, maxGreatPrice});
 
   return (
     <div>
       <span
         className={cn(
-          bootstrapStyles['fs-6'],
           bootstrapStyles['d-flex'],
           bootstrapStyles['align-items-center'],
           bootstrapStyles['justify-content-center'],
-          customStyles['size-20'],
           bootstrapStyles['text-capitalize']
         )}
+        style={{fontSize: '16px'}}
       >
         Dealer Price
       </span>
       <p
-        style={{color: tmv.COLORS[value]}}
+        style={{color: tmv.COLORS[value], fontSize: '20px'}}
         className={cn(
           bootstrapStyles['d-flex'],
           bootstrapStyles['align-items-center'],
           bootstrapStyles['justify-content-center'],
-          customStyles['size-20'],
           bootstrapStyles['text-capitalize']
         )}
       >

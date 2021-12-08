@@ -5,17 +5,24 @@ import ReactStars from 'react-stars';
 import check from 'bundle-text:./check.svg';
 import cross from 'bundle-text:./cross.svg';
 
+import styles from './reviews.module.scss';
 import bootstrapStyles from '../../styles/bootstrap.module.scss';
 
-function Reviews({reviews}) {
-  const renderEditorial = () => {
-    if (!reviews.editorial) {
+function Review({review}) {
+  console.log(review);
+
+  if (!review) {
+    return null;
+  }
+
+  const renderDetails = () => {
+    if (!review.pros && !review.cons) {
       return null;
     }
 
     return (
       <ul>
-        {reviews.editorial.pros.map(text => (
+        {review?.pros.map(text => (
           <li
             key={text}
             className={cn(
@@ -23,6 +30,7 @@ function Reviews({reviews}) {
               bootstrapStyles['align-items-center'],
               bootstrapStyles['mb-2']
             )}
+            style={{fontSize: '16px', color: '#555'}}
           >
             <div
               className={cn(
@@ -35,66 +43,25 @@ function Reviews({reviews}) {
             {text}
           </li>
         ))}
-        {reviews.editorial.cons &&
-          reviews.editorial.cons.map(text => (
-            <li
-              key={text}
-              className={cn(
-                bootstrapStyles['d-flex'],
-                bootstrapStyles['align-items-center'],
-                bootstrapStyles['mb-2']
-              )}
-            >
-              <div
-                className={cn(
-                  bootstrapStyles['d-flex'],
-                  bootstrapStyles['align-items-center'],
-                  bootstrapStyles['me-2']
-                )}
-                dangerouslySetInnerHTML={{__html: cross}}
-              ></div>
-              {text}
-            </li>
-          ))}
-      </ul>
-    );
-  };
-
-  const renderConsumers = () => {
-    if (!reviews.consumers) {
-      return null;
-    }
-
-    return (
-      <ul>
-        {reviews.consumers.map(review => (
-          <li key={review.name} className={cn(bootstrapStyles['mb-2'])}>
-            <div className={cn(bootstrapStyles['d-flex'], bootstrapStyles['align-items-center'])}>
-              <ReactStars
-                size={16}
-                count={5}
-                value={review.rating}
-                edit={false}
-                color1={'#a3a3a3'}
-                color2={'#0069bf'}
-                className={bootstrapStyles['pe-1']}
-              />
-              <span style={{color: '#0069bf'}} className={cn(bootstrapStyles['fw-bolder'])}>
-                {review.short}
-              </span>
-            </div>
+        {review?.cons.map(text => (
+          <li
+            key={text}
+            className={cn(
+              bootstrapStyles['d-flex'],
+              bootstrapStyles['align-items-center'],
+              bootstrapStyles['mb-2']
+            )}
+            style={{fontSize: '16px', color: '#555'}}
+          >
             <div
-              style={{color: '#767676', fontSize: '12px'}}
               className={cn(
                 bootstrapStyles['d-flex'],
                 bootstrapStyles['align-items-center'],
-                bootstrapStyles['mb-2']
+                bootstrapStyles['me-2']
               )}
-            >
-              <span>{review.name}, </span>
-              <span>{review.date}</span>
-            </div>
-            <p>{review.text}</p>
+              dangerouslySetInnerHTML={{__html: cross}}
+            ></div>
+            {text}
           </li>
         ))}
       </ul>
@@ -103,16 +70,16 @@ function Reviews({reviews}) {
 
   return (
     <div>
-      <h4 className={cn(bootstrapStyles['mb-2'], bootstrapStyles['fs-5'])}>
+      <h4 className={cn(bootstrapStyles['mb-2'])} style={{fontSize: '20px', color: '#333'}}>
         Edmunds Experts Review:
       </h4>
-      {renderEditorial()}
-      <h4 className={cn(bootstrapStyles['mb-2'], bootstrapStyles['mt-4'], bootstrapStyles['fs-5'])}>
-        Consumer Reviews:
-      </h4>
-      {renderConsumers()}
+      {renderDetails()}
+      <div
+        dangerouslySetInnerHTML={{__html: review.summary}}
+        className={(bootstrapStyles['fs-6'], bootstrapStyles['mt-2'], styles.reviews_summary)}
+      ></div>
     </div>
   );
 }
 
-export default Reviews;
+export default Review;

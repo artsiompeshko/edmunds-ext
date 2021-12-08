@@ -32,10 +32,10 @@ function Header({onClose}) {
             ></div>
             <h3
               className={cn(
-                bootstrapStyles['fs-6'],
                 bootstrapStyles['ms-2'],
                 bootstrapStyles['my-0'],
-                bootstrapStyles['p-0']
+                bootstrapStyles['p-0'],
+                styles.title
               )}
             >
               Edmunds Guide
@@ -49,6 +49,9 @@ function Header({onClose}) {
               bootstrapStyles['btn-sm'],
               bootstrapStyles['btn-close']
             )}
+            style={{
+              fontSize: '14px'
+            }}
             aria-label="Close"
           ></button>
         </div>

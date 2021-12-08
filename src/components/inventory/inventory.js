@@ -10,21 +10,22 @@ function Inventory({vehicle}) {
       className={cn(styles['edm-ext-inventory'], customStyles['p-2_5'], bootstrapStyles['mb-2'])}
     >
       <section>
-        <div className={cn(bootstrapStyles['mt-1'])}>{vehicle.status}</div>
         <h3
           className={cn(
             bootstrapStyles['text-black'],
             bootstrapStyles['d-inline-block'],
-            bootstrapStyles['mb-0'],
-            bootstrapStyles['fs-4']
+            bootstrapStyles['mb-0']
           )}
+          style={{
+            fontSize: '24px'
+          }}
         >
-          {vehicle.year} {vehicle.make} {vehicle.model}
+          {vehicle.year} {vehicle.make} {vehicle.model} {vehicle.trim}
         </h3>
         <div>
           <span className={cn(bootstrapStyles['text-black'])}>{vehicle.style}</span>
-          <div className={cn(bootstrapStyles.small)}>
-            <span>VIN: {vehicle.vin}</span>
+          <div>
+            <span style={{fontSize: '14px'}}>VIN: {vehicle.vin}</span>
           </div>
         </div>
       </section>

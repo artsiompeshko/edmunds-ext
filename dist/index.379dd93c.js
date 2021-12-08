@@ -952,14 +952,18 @@ var _reactDomDefault = parcelHelpers.interopDefault(_reactDom);
 var _widget = require("./widget");
 var _vehicle = require("./core/vehicle/vehicle");
 const pageVin = _vehicle.vehicle.getPageVin();
+const pagePrice = _vehicle.vehicle.getContentPrice()[0];
+console.log('Page VIN found', pageVin);
+console.log('Page PRICE found', pagePrice);
 if (pageVin) {
     const div = document.createElement('div');
     document.body.appendChild(div);
     _reactDomDefault.default.render(/*#__PURE__*/ _jsxRuntime.jsx(_widget.Widget, {
         vin: pageVin,
+        price: +pagePrice?.replace(',', ''),
         __source: {
             fileName: "src/index.js",
-            lineNumber: 11,
+            lineNumber: 16,
             columnNumber: 19
         },
         __self: undefined
@@ -22765,50 +22769,35 @@ var _bootstrapModuleScss = require("./styles/bootstrap.module.scss");
 var _customModuleScss = require("./styles/custom.module.scss");
 var _widgetModuleScss = require("./widget.module.scss");
 var _s = $RefreshSig$();
-function Widget({ vin  }) {
+function Widget({ vin , price  }) {
     _s();
-    const [vehicle1, setVehicle] = _react.useState(null);
-    const [zipcode1, setZipcode] = _react.useState(null);
-    const [reviews1, setReviews] = _react.useState(null);
+    const [vehicle, setVehicle] = _react.useState(null);
+    const [review, setReview] = _react.useState(null);
+    const [tmv, setTmv] = _react.useState(null);
     const [invenotries, setInventories] = _react.useState(null);
     const [loading, setLoading] = _react.useState(true);
+    const [error, setError] = _react.useState('');
     const [opened, setOpened] = _react.useState(true);
     const [activeTabKey, setActiveTabKey] = _react.useState(_tabs.TABS[0].key);
-    async function loadVehicle() {
-        const vehicle = await _api.api.loadVehicle(vin);
-        setVehicle(vehicle);
-    }
-    async function loadReviews() {
-        const reviews = await _api.api.loadReviews(vin);
-        setReviews(reviews);
-    }
-    async function getZipCode() {
-        const zipcode = await _api.api.getZipCode();
-        setZipcode(zipcode);
-    }
-    async function loadSimilar() {
-        const inventories = await _api.api.loadSimilar({
-            zip: zipcode1,
-            radius: 50,
-            ...vehicle1
+    async function loadData() {
+        const data = await _api.api.loadData(vin);
+        if (!data) {
+            setLoading(false);
+            setError('Not enough data to display');
+        }
+        setVehicle({
+            vin,
+            displayPrice: price,
+            ...data.vehicle || {
+            }
         });
-        setInventories(inventories);
+        setInventories(data.similarVehicles);
+        setReview(data.vehicleReview);
+        setTmv(data.tmv);
         setLoading(false);
     }
     _react.useEffect(()=>{
-        loadVehicle();
-    }, []);
-    _react.useEffect(()=>{
-        getZipCode();
-    }, []);
-    _react.useEffect(()=>{
-        if (zipcode1 && vehicle1) loadSimilar();
-    }, [
-        vehicle1,
-        zipcode1
-    ]);
-    _react.useEffect(()=>{
-        loadReviews();
+        loadData();
     }, []);
     const onClose = _react.useCallback(()=>{
         setOpened(false);
@@ -22819,21 +22808,24 @@ function Widget({ vin  }) {
         if (activeTabKey === _tabs.TAB_KEY.TMV) return(/*#__PURE__*/ _jsxRuntime.jsxs(_jsxRuntime.Fragment, {
             children: [
                 /*#__PURE__*/ _jsxRuntime.jsx(_tmvDefault.default, {
-                    maxFairPrice: 100,
-                    maxGreatPrice: 80,
-                    price: 110,
+                    ...tmv,
+                    price: vehicle.displayPrice,
                     __source: {
                         fileName: "src/widget.js",
-                        lineNumber: 77,
+                        lineNumber: 59,
                         columnNumber: 11
                     },
                     __self: this
                 }),
                 /*#__PURE__*/ _jsxRuntime.jsx("p", {
-                    className: _classnamesDefault.default(_bootstrapModuleScss['fs-5'], _bootstrapModuleScss['mt-4'], _bootstrapModuleScss['mb-2']),
+                    style: {
+                        fontSize: '20px',
+                        color: '#333'
+                    },
+                    className: _classnamesDefault.default(_bootstrapModuleScss['mt-4'], _bootstrapModuleScss['mb-2']),
                     __source: {
                         fileName: "src/widget.js",
-                        lineNumber: 78,
+                        lineNumber: 60,
                         columnNumber: 11
                     },
                     __self: this,
@@ -22841,9 +22833,10 @@ function Widget({ vin  }) {
                 }),
                 /*#__PURE__*/ _jsxRuntime.jsx(_cardsDefault.default, {
                     invenotries: invenotries,
+                    inventory: vehicle,
                     __source: {
                         fileName: "src/widget.js",
-                        lineNumber: 87,
+                        lineNumber: 66,
                         columnNumber: 11
                     },
                     __self: this
@@ -22852,10 +22845,10 @@ function Widget({ vin  }) {
         }));
         if (activeTabKey === _tabs.TAB_KEY.REVIEWS) return(/*#__PURE__*/ _jsxRuntime.jsx(_jsxRuntime.Fragment, {
             children: /*#__PURE__*/ _jsxRuntime.jsx(_reviewsDefault.default, {
-                reviews: reviews1,
+                review: review,
                 __source: {
                     fileName: "src/widget.js",
-                    lineNumber: 95,
+                    lineNumber: 74,
                     columnNumber: 11
                 },
                 __self: this
@@ -22867,14 +22860,14 @@ function Widget({ vin  }) {
             className: _classnamesDefault.default(_bootstrapModuleScss['w-100'], _widgetModuleScss['edm-ext-widget_loading'], _bootstrapModuleScss['d-flex'], _bootstrapModuleScss['align-items-center'], _bootstrapModuleScss['justify-content-center']),
             __source: {
                 fileName: "src/widget.js",
-                lineNumber: 104,
+                lineNumber: 83,
                 columnNumber: 9
             },
             __self: this,
             children: /*#__PURE__*/ _jsxRuntime.jsx(_loadingDefault.default, {
                 __source: {
                     fileName: "src/widget.js",
-                    lineNumber: 113,
+                    lineNumber: 92,
                     columnNumber: 11
                 },
                 __self: this
@@ -22883,14 +22876,14 @@ function Widget({ vin  }) {
         return(/*#__PURE__*/ _jsxRuntime.jsx("div", {
             __source: {
                 fileName: "src/widget.js",
-                lineNumber: 119,
+                lineNumber: 98,
                 columnNumber: 7
             },
             __self: this,
             children: /*#__PURE__*/ _jsxRuntime.jsxs("div", {
                 __source: {
                     fileName: "src/widget.js",
-                    lineNumber: 120,
+                    lineNumber: 99,
                     columnNumber: 9
                 },
                 __self: this,
@@ -22899,15 +22892,15 @@ function Widget({ vin  }) {
                         className: _widgetModuleScss['edm-ext-inventory'],
                         __source: {
                             fileName: "src/widget.js",
-                            lineNumber: 121,
+                            lineNumber: 100,
                             columnNumber: 11
                         },
                         __self: this,
                         children: /*#__PURE__*/ _jsxRuntime.jsx(_inventoryDefault.default, {
-                            vehicle: vehicle1,
+                            vehicle: vehicle,
                             __source: {
                                 fileName: "src/widget.js",
-                                lineNumber: 122,
+                                lineNumber: 101,
                                 columnNumber: 13
                             },
                             __self: this
@@ -22923,7 +22916,7 @@ function Widget({ vin  }) {
         className: "edm-widget-reset",
         __source: {
             fileName: "src/widget.js",
-            lineNumber: 135,
+            lineNumber: 114,
             columnNumber: 5
         },
         __self: this,
@@ -22931,7 +22924,7 @@ function Widget({ vin  }) {
             className: _classnamesDefault.default(_bootstrapModuleScss['edm-ext'], _widgetModuleScss['edm-ext-floating'], _widgetModuleScss['edm-ext']),
             __source: {
                 fileName: "src/widget.js",
-                lineNumber: 136,
+                lineNumber: 115,
                 columnNumber: 7
             },
             __self: this,
@@ -22939,7 +22932,7 @@ function Widget({ vin  }) {
                 className: _classnamesDefault.default(_bootstrapModuleScss.shadow, _bootstrapModuleScss.rounded, _bootstrapModuleScss['bg-white'], _bootstrapModuleScss['overflow-hidden'], _widgetModuleScss['edm-ext-widget']),
                 __source: {
                     fileName: "src/widget.js",
-                    lineNumber: 139,
+                    lineNumber: 118,
                     columnNumber: 9
                 },
                 __self: this,
@@ -22949,16 +22942,19 @@ function Widget({ vin  }) {
                         onClose: onClose,
                         __source: {
                             fileName: "src/widget.js",
-                            lineNumber: 148,
+                            lineNumber: 127,
                             columnNumber: 11
                         },
                         __self: this
                     }),
                     /*#__PURE__*/ _jsxRuntime.jsx("main", {
-                        className: _classnamesDefault.default(_widgetModuleScss['edm-ext-widget_main'], _customModuleScss['p-2_5'], _bootstrapModuleScss['pt-0']),
+                        className: _classnamesDefault.default(_widgetModuleScss['edm-ext-widget_main'], _customModuleScss['p-widget'], _bootstrapModuleScss['pt-0']),
+                        style: {
+                            paddingTop: '0'
+                        },
                         __source: {
                             fileName: "src/widget.js",
-                            lineNumber: 149,
+                            lineNumber: 128,
                             columnNumber: 11
                         },
                         __self: this,
@@ -22970,7 +22966,7 @@ function Widget({ vin  }) {
                         onTabClick: setActiveTabKey,
                         __source: {
                             fileName: "src/widget.js",
-                            lineNumber: 158,
+                            lineNumber: 138,
                             columnNumber: 11
                         },
                         __self: this
@@ -22980,7 +22976,7 @@ function Widget({ vin  }) {
         })
     }));
 }
-_s(Widget, "vxubG5Ziqvg8fBe9euEQ4djs2yY=");
+_s(Widget, "BsrAb50n8UYE3ty/Y85cR6srBWs=");
 _c = Widget;
 var _c;
 $RefreshReg$(_c, "Widget");
@@ -22990,7 +22986,7 @@ $RefreshReg$(_c, "Widget");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-runtime":"6Ds2u","react":"4mchR","classnames":"2cVcN","./api/api":"h6gjd","./components/header/header":"bVqI5","./components/loading/loading":"cjcYe","./components/cards/cards":"7ILtu","./components/tmv/tmv":"5tplp","./core/tabs/tabs":"brepH","./components/tabs/tabs":"7TkBD","./components/inventory/inventory":"hzkfG","./styles/bootstrap.module.scss":"5tHoS","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"9pz13","./widget.module.scss":"870Yi","./styles/custom.module.scss":"d82RX","./components/reviews/reviews":"1lOrb"}],"2cVcN":[function(require,module,exports) {
+},{"react/jsx-runtime":"6Ds2u","react":"4mchR","classnames":"2cVcN","./api/api":"h6gjd","./components/header/header":"bVqI5","./components/loading/loading":"cjcYe","./components/cards/cards":"7ILtu","./components/tmv/tmv":"5tplp","./core/tabs/tabs":"brepH","./components/tabs/tabs":"7TkBD","./components/inventory/inventory":"hzkfG","./components/reviews/reviews":"1lOrb","./styles/bootstrap.module.scss":"5tHoS","./styles/custom.module.scss":"d82RX","./widget.module.scss":"870Yi","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"9pz13"}],"2cVcN":[function(require,module,exports) {
 (function() {
     var hasOwn = {
     }.hasOwnProperty;
@@ -23029,6 +23025,40 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "api", ()=>api
 );
+var _d3Array = require("d3-array");
+function calculateTmv(vehicles) {
+    if (!vehicles) return {
+    };
+    if (vehicles.length < 10) return {
+    };
+    const prices = vehicles.map(({ displayPrice  })=>+displayPrice
+    );
+    prices.sort((a, b)=>a - b
+    );
+    return {
+        maxFairPrice: _d3Array.quantile(prices, 0.75),
+        maxGreatPrice: _d3Array.quantile(prices, 0.25)
+    };
+}
+async function loadData(vin) {
+    try {
+        const { zipCode  } = await fetch('https://dev-dsg11-api.carcode.com/carcode/v1/ccapi/location').then((response)=>response.json()
+        );
+        const data = await fetch(`https://dev-dsg11-api.carcode.com/carcode/v1/ccapi/vin-decoder/${vin}?zipcode=${zipCode}`).then((response)=>response.json()
+        );
+        data.comparablePrices = data?.comparablePrices.filter(({ displayPrice  })=>displayPrice
+        );
+        const result = {
+            vehicle: data.vinDecoderResponseDto,
+            similarVehicles: data.comparablePrices,
+            vehicleReview: data?.vehicleReviewResponseDto?.vehicleReview,
+            tmv: calculateTmv(data.comparablePrices)
+        };
+        return result;
+    } catch (e) {
+        return null;
+    }
+}
 async function loadVehicle(vin) {
     return {
         make: 'Audi',
@@ -23148,11 +23178,292 @@ async function loadReviews(vin) {
     };
 }
 const api = {
+    loadData,
     loadVehicle,
     getZipCode,
     loadSimilar,
     loadTmv,
     loadReviews
+};
+
+},{"d3-array":"dclxS","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"dclxS":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "bisect", ()=>_bisectJsDefault.default
+);
+parcelHelpers.export(exports, "bisectRight", ()=>_bisectJs.bisectRight
+);
+parcelHelpers.export(exports, "bisectLeft", ()=>_bisectJs.bisectLeft
+);
+parcelHelpers.export(exports, "bisectCenter", ()=>_bisectJs.bisectCenter
+);
+parcelHelpers.export(exports, "ascending", ()=>_ascendingJsDefault.default
+);
+parcelHelpers.export(exports, "bisector", ()=>_bisectorJsDefault.default
+);
+parcelHelpers.export(exports, "count", ()=>_countJsDefault.default
+);
+parcelHelpers.export(exports, "cross", ()=>_crossJsDefault.default
+);
+parcelHelpers.export(exports, "cumsum", ()=>_cumsumJsDefault.default
+);
+parcelHelpers.export(exports, "descending", ()=>_descendingJsDefault.default
+);
+parcelHelpers.export(exports, "deviation", ()=>_deviationJsDefault.default
+);
+parcelHelpers.export(exports, "extent", ()=>_extentJsDefault.default
+);
+parcelHelpers.export(exports, "Adder", ()=>_fsumJs.Adder
+);
+parcelHelpers.export(exports, "fsum", ()=>_fsumJs.fsum
+);
+parcelHelpers.export(exports, "fcumsum", ()=>_fsumJs.fcumsum
+);
+parcelHelpers.export(exports, "group", ()=>_groupJsDefault.default
+);
+parcelHelpers.export(exports, "groups", ()=>_groupJs.groups
+);
+parcelHelpers.export(exports, "index", ()=>_groupJs.index
+);
+parcelHelpers.export(exports, "indexes", ()=>_groupJs.indexes
+);
+parcelHelpers.export(exports, "rollup", ()=>_groupJs.rollup
+);
+parcelHelpers.export(exports, "rollups", ()=>_groupJs.rollups
+);
+parcelHelpers.export(exports, "groupSort", ()=>_groupSortJsDefault.default
+);
+parcelHelpers.export(exports, "bin", ()=>_binJsDefault.default
+) // Deprecated; use bin.
+;
+parcelHelpers.export(exports, "histogram", ()=>_binJsDefault.default
+);
+parcelHelpers.export(exports, "thresholdFreedmanDiaconis", ()=>_freedmanDiaconisJsDefault.default
+);
+parcelHelpers.export(exports, "thresholdScott", ()=>_scottJsDefault.default
+);
+parcelHelpers.export(exports, "thresholdSturges", ()=>_sturgesJsDefault.default
+);
+parcelHelpers.export(exports, "max", ()=>_maxJsDefault.default
+);
+parcelHelpers.export(exports, "maxIndex", ()=>_maxIndexJsDefault.default
+);
+parcelHelpers.export(exports, "mean", ()=>_meanJsDefault.default
+);
+parcelHelpers.export(exports, "median", ()=>_medianJsDefault.default
+);
+parcelHelpers.export(exports, "merge", ()=>_mergeJsDefault.default
+);
+parcelHelpers.export(exports, "min", ()=>_minJsDefault.default
+);
+parcelHelpers.export(exports, "minIndex", ()=>_minIndexJsDefault.default
+);
+parcelHelpers.export(exports, "nice", ()=>_niceJsDefault.default
+);
+parcelHelpers.export(exports, "pairs", ()=>_pairsJsDefault.default
+);
+parcelHelpers.export(exports, "permute", ()=>_permuteJsDefault.default
+);
+parcelHelpers.export(exports, "quantile", ()=>_quantileJsDefault.default
+);
+parcelHelpers.export(exports, "quantileSorted", ()=>_quantileJs.quantileSorted
+);
+parcelHelpers.export(exports, "quickselect", ()=>_quickselectJsDefault.default
+);
+parcelHelpers.export(exports, "range", ()=>_rangeJsDefault.default
+);
+parcelHelpers.export(exports, "least", ()=>_leastJsDefault.default
+);
+parcelHelpers.export(exports, "leastIndex", ()=>_leastIndexJsDefault.default
+);
+parcelHelpers.export(exports, "greatest", ()=>_greatestJsDefault.default
+);
+parcelHelpers.export(exports, "greatestIndex", ()=>_greatestIndexJsDefault.default
+);
+parcelHelpers.export(exports, "scan", ()=>_scanJsDefault.default
+) // Deprecated; use leastIndex.
+;
+parcelHelpers.export(exports, "shuffle", ()=>_shuffleJsDefault.default
+);
+parcelHelpers.export(exports, "shuffler", ()=>_shuffleJs.shuffler
+);
+parcelHelpers.export(exports, "sum", ()=>_sumJsDefault.default
+);
+parcelHelpers.export(exports, "ticks", ()=>_ticksJsDefault.default
+);
+parcelHelpers.export(exports, "tickIncrement", ()=>_ticksJs.tickIncrement
+);
+parcelHelpers.export(exports, "tickStep", ()=>_ticksJs.tickStep
+);
+parcelHelpers.export(exports, "transpose", ()=>_transposeJsDefault.default
+);
+parcelHelpers.export(exports, "variance", ()=>_varianceJsDefault.default
+);
+parcelHelpers.export(exports, "zip", ()=>_zipJsDefault.default
+);
+parcelHelpers.export(exports, "every", ()=>_everyJsDefault.default
+);
+parcelHelpers.export(exports, "some", ()=>_someJsDefault.default
+);
+parcelHelpers.export(exports, "filter", ()=>_filterJsDefault.default
+);
+parcelHelpers.export(exports, "map", ()=>_mapJsDefault.default
+);
+parcelHelpers.export(exports, "reduce", ()=>_reduceJsDefault.default
+);
+parcelHelpers.export(exports, "reverse", ()=>_reverseJsDefault.default
+);
+parcelHelpers.export(exports, "sort", ()=>_sortJsDefault.default
+);
+parcelHelpers.export(exports, "difference", ()=>_differenceJsDefault.default
+);
+parcelHelpers.export(exports, "disjoint", ()=>_disjointJsDefault.default
+);
+parcelHelpers.export(exports, "intersection", ()=>_intersectionJsDefault.default
+);
+parcelHelpers.export(exports, "subset", ()=>_subsetJsDefault.default
+);
+parcelHelpers.export(exports, "superset", ()=>_supersetJsDefault.default
+);
+parcelHelpers.export(exports, "union", ()=>_unionJsDefault.default
+);
+parcelHelpers.export(exports, "InternMap", ()=>_internmap.InternMap
+);
+parcelHelpers.export(exports, "InternSet", ()=>_internmap.InternSet
+);
+var _bisectJs = require("./bisect.js");
+var _bisectJsDefault = parcelHelpers.interopDefault(_bisectJs);
+var _ascendingJs = require("./ascending.js");
+var _ascendingJsDefault = parcelHelpers.interopDefault(_ascendingJs);
+var _bisectorJs = require("./bisector.js");
+var _bisectorJsDefault = parcelHelpers.interopDefault(_bisectorJs);
+var _countJs = require("./count.js");
+var _countJsDefault = parcelHelpers.interopDefault(_countJs);
+var _crossJs = require("./cross.js");
+var _crossJsDefault = parcelHelpers.interopDefault(_crossJs);
+var _cumsumJs = require("./cumsum.js");
+var _cumsumJsDefault = parcelHelpers.interopDefault(_cumsumJs);
+var _descendingJs = require("./descending.js");
+var _descendingJsDefault = parcelHelpers.interopDefault(_descendingJs);
+var _deviationJs = require("./deviation.js");
+var _deviationJsDefault = parcelHelpers.interopDefault(_deviationJs);
+var _extentJs = require("./extent.js");
+var _extentJsDefault = parcelHelpers.interopDefault(_extentJs);
+var _fsumJs = require("./fsum.js");
+var _groupJs = require("./group.js");
+var _groupJsDefault = parcelHelpers.interopDefault(_groupJs);
+var _groupSortJs = require("./groupSort.js");
+var _groupSortJsDefault = parcelHelpers.interopDefault(_groupSortJs);
+var _binJs = require("./bin.js");
+var _binJsDefault = parcelHelpers.interopDefault(_binJs);
+var _freedmanDiaconisJs = require("./threshold/freedmanDiaconis.js");
+var _freedmanDiaconisJsDefault = parcelHelpers.interopDefault(_freedmanDiaconisJs);
+var _scottJs = require("./threshold/scott.js");
+var _scottJsDefault = parcelHelpers.interopDefault(_scottJs);
+var _sturgesJs = require("./threshold/sturges.js");
+var _sturgesJsDefault = parcelHelpers.interopDefault(_sturgesJs);
+var _maxJs = require("./max.js");
+var _maxJsDefault = parcelHelpers.interopDefault(_maxJs);
+var _maxIndexJs = require("./maxIndex.js");
+var _maxIndexJsDefault = parcelHelpers.interopDefault(_maxIndexJs);
+var _meanJs = require("./mean.js");
+var _meanJsDefault = parcelHelpers.interopDefault(_meanJs);
+var _medianJs = require("./median.js");
+var _medianJsDefault = parcelHelpers.interopDefault(_medianJs);
+var _mergeJs = require("./merge.js");
+var _mergeJsDefault = parcelHelpers.interopDefault(_mergeJs);
+var _minJs = require("./min.js");
+var _minJsDefault = parcelHelpers.interopDefault(_minJs);
+var _minIndexJs = require("./minIndex.js");
+var _minIndexJsDefault = parcelHelpers.interopDefault(_minIndexJs);
+var _niceJs = require("./nice.js");
+var _niceJsDefault = parcelHelpers.interopDefault(_niceJs);
+var _pairsJs = require("./pairs.js");
+var _pairsJsDefault = parcelHelpers.interopDefault(_pairsJs);
+var _permuteJs = require("./permute.js");
+var _permuteJsDefault = parcelHelpers.interopDefault(_permuteJs);
+var _quantileJs = require("./quantile.js");
+var _quantileJsDefault = parcelHelpers.interopDefault(_quantileJs);
+var _quickselectJs = require("./quickselect.js");
+var _quickselectJsDefault = parcelHelpers.interopDefault(_quickselectJs);
+var _rangeJs = require("./range.js");
+var _rangeJsDefault = parcelHelpers.interopDefault(_rangeJs);
+var _leastJs = require("./least.js");
+var _leastJsDefault = parcelHelpers.interopDefault(_leastJs);
+var _leastIndexJs = require("./leastIndex.js");
+var _leastIndexJsDefault = parcelHelpers.interopDefault(_leastIndexJs);
+var _greatestJs = require("./greatest.js");
+var _greatestJsDefault = parcelHelpers.interopDefault(_greatestJs);
+var _greatestIndexJs = require("./greatestIndex.js");
+var _greatestIndexJsDefault = parcelHelpers.interopDefault(_greatestIndexJs);
+var _scanJs = require("./scan.js");
+var _scanJsDefault = parcelHelpers.interopDefault(_scanJs);
+var _shuffleJs = require("./shuffle.js");
+var _shuffleJsDefault = parcelHelpers.interopDefault(_shuffleJs);
+var _sumJs = require("./sum.js");
+var _sumJsDefault = parcelHelpers.interopDefault(_sumJs);
+var _ticksJs = require("./ticks.js");
+var _ticksJsDefault = parcelHelpers.interopDefault(_ticksJs);
+var _transposeJs = require("./transpose.js");
+var _transposeJsDefault = parcelHelpers.interopDefault(_transposeJs);
+var _varianceJs = require("./variance.js");
+var _varianceJsDefault = parcelHelpers.interopDefault(_varianceJs);
+var _zipJs = require("./zip.js");
+var _zipJsDefault = parcelHelpers.interopDefault(_zipJs);
+var _everyJs = require("./every.js");
+var _everyJsDefault = parcelHelpers.interopDefault(_everyJs);
+var _someJs = require("./some.js");
+var _someJsDefault = parcelHelpers.interopDefault(_someJs);
+var _filterJs = require("./filter.js");
+var _filterJsDefault = parcelHelpers.interopDefault(_filterJs);
+var _mapJs = require("./map.js");
+var _mapJsDefault = parcelHelpers.interopDefault(_mapJs);
+var _reduceJs = require("./reduce.js");
+var _reduceJsDefault = parcelHelpers.interopDefault(_reduceJs);
+var _reverseJs = require("./reverse.js");
+var _reverseJsDefault = parcelHelpers.interopDefault(_reverseJs);
+var _sortJs = require("./sort.js");
+var _sortJsDefault = parcelHelpers.interopDefault(_sortJs);
+var _differenceJs = require("./difference.js");
+var _differenceJsDefault = parcelHelpers.interopDefault(_differenceJs);
+var _disjointJs = require("./disjoint.js");
+var _disjointJsDefault = parcelHelpers.interopDefault(_disjointJs);
+var _intersectionJs = require("./intersection.js");
+var _intersectionJsDefault = parcelHelpers.interopDefault(_intersectionJs);
+var _subsetJs = require("./subset.js");
+var _subsetJsDefault = parcelHelpers.interopDefault(_subsetJs);
+var _supersetJs = require("./superset.js");
+var _supersetJsDefault = parcelHelpers.interopDefault(_supersetJs);
+var _unionJs = require("./union.js");
+var _unionJsDefault = parcelHelpers.interopDefault(_unionJs);
+var _internmap = require("internmap");
+
+},{"./bisect.js":"aBOzL","./ascending.js":"is3Cq","./bisector.js":"d0uRQ","./count.js":"3W7W6","./cross.js":"9wmuf","./cumsum.js":"gTBYA","./descending.js":"3aHVG","./deviation.js":"gC5d9","./extent.js":"i65AD","./fsum.js":"kNcPo","./group.js":"9hlDG","./groupSort.js":"9bi08","./bin.js":"e29mp","./threshold/freedmanDiaconis.js":"YcDJP","./threshold/scott.js":"h9Xie","./threshold/sturges.js":"iBhHB","./max.js":"aKI7F","./maxIndex.js":"cI4hF","./mean.js":"522BH","./median.js":"25KY1","./merge.js":"lLqaS","./min.js":"ah5VG","./minIndex.js":"cjolc","./nice.js":"8MlNU","./pairs.js":"f10CX","./permute.js":"lBJIA","./quantile.js":"g22bz","./quickselect.js":"fusOg","./range.js":"aFuRJ","./least.js":"ewg2M","./leastIndex.js":"hCcEV","./greatest.js":"jX3nM","./greatestIndex.js":"5lFsk","./scan.js":"ek53c","./shuffle.js":"hrDvf","./sum.js":"5x489","./ticks.js":"eP3r2","./transpose.js":"eTl2h","./variance.js":"fFwh7","./zip.js":"g6Swo","./every.js":"j8w8G","./some.js":"258kt","./filter.js":"kmzCm","./map.js":"g8C0v","./reduce.js":"kJqMu","./reverse.js":"c5OzD","./sort.js":"iPqde","./difference.js":"4yCN3","./disjoint.js":"i51B2","./intersection.js":"xQI0g","./subset.js":"bSPhW","./superset.js":"30CTh","./union.js":"byxPk","internmap":"jYc4q","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"aBOzL":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "bisectRight", ()=>bisectRight
+);
+parcelHelpers.export(exports, "bisectLeft", ()=>bisectLeft
+);
+parcelHelpers.export(exports, "bisectCenter", ()=>bisectCenter
+);
+var _ascendingJs = require("./ascending.js");
+var _ascendingJsDefault = parcelHelpers.interopDefault(_ascendingJs);
+var _bisectorJs = require("./bisector.js");
+var _bisectorJsDefault = parcelHelpers.interopDefault(_bisectorJs);
+var _numberJs = require("./number.js");
+var _numberJsDefault = parcelHelpers.interopDefault(_numberJs);
+const ascendingBisect = _bisectorJsDefault.default(_ascendingJsDefault.default);
+const bisectRight = ascendingBisect.right;
+const bisectLeft = ascendingBisect.left;
+const bisectCenter = _bisectorJsDefault.default(_numberJsDefault.default).center;
+exports.default = bisectRight;
+
+},{"./ascending.js":"is3Cq","./bisector.js":"d0uRQ","./number.js":"bMc02","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"is3Cq":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+exports.default = function(a, b) {
+    return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 };
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"ciiiV":[function(require,module,exports) {
@@ -23185,7 +23496,1224 @@ exports.export = function(dest, destName, get) {
     });
 };
 
-},{}],"bVqI5":[function(require,module,exports) {
+},{}],"d0uRQ":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _ascendingJs = require("./ascending.js");
+var _ascendingJsDefault = parcelHelpers.interopDefault(_ascendingJs);
+exports.default = function(f) {
+    let delta = f;
+    let compare = f;
+    if (f.length === 1) {
+        delta = (d, x)=>f(d) - x
+        ;
+        compare = ascendingComparator(f);
+    }
+    function left(a, x, lo, hi) {
+        if (lo == null) lo = 0;
+        if (hi == null) hi = a.length;
+        while(lo < hi){
+            const mid = lo + hi >>> 1;
+            if (compare(a[mid], x) < 0) lo = mid + 1;
+            else hi = mid;
+        }
+        return lo;
+    }
+    function right(a, x, lo, hi) {
+        if (lo == null) lo = 0;
+        if (hi == null) hi = a.length;
+        while(lo < hi){
+            const mid = lo + hi >>> 1;
+            if (compare(a[mid], x) > 0) hi = mid;
+            else lo = mid + 1;
+        }
+        return lo;
+    }
+    function center(a, x, lo, hi) {
+        if (lo == null) lo = 0;
+        if (hi == null) hi = a.length;
+        const i = left(a, x, lo, hi - 1);
+        return i > lo && delta(a[i - 1], x) > -delta(a[i], x) ? i - 1 : i;
+    }
+    return {
+        left,
+        center,
+        right
+    };
+};
+function ascendingComparator(f) {
+    return (d, x)=>_ascendingJsDefault.default(f(d), x)
+    ;
+}
+
+},{"./ascending.js":"is3Cq","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"bMc02":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "numbers", ()=>numbers
+);
+exports.default = function(x) {
+    return x === null ? NaN : +x;
+};
+function* numbers(values, valueof) {
+    if (valueof === undefined) {
+        for (let value of values)if (value != null && (value = +value) >= value) yield value;
+    } else {
+        let index = -1;
+        for (let value of values)if ((value = valueof(value, ++index, values)) != null && (value = +value) >= value) yield value;
+    }
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"3W7W6":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function count1(values, valueof) {
+    let count = 0;
+    if (valueof === undefined) {
+        for (let value of values)if (value != null && (value = +value) >= value) ++count;
+    } else {
+        let index = -1;
+        for (let value of values)if ((value = valueof(value, ++index, values)) != null && (value = +value) >= value) ++count;
+    }
+    return count;
+}
+exports.default = count1;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"9wmuf":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function length1(array) {
+    return array.length | 0;
+}
+function empty(length) {
+    return !(length > 0);
+}
+function arrayify(values) {
+    return typeof values !== "object" || "length" in values ? values : Array.from(values);
+}
+function reducer(reduce) {
+    return (values)=>reduce(...values)
+    ;
+}
+function cross(...values) {
+    const reduce = typeof values[values.length - 1] === "function" && reducer(values.pop());
+    values = values.map(arrayify);
+    const lengths = values.map(length1);
+    const j = values.length - 1;
+    const index = new Array(j + 1).fill(0);
+    const product = [];
+    if (j < 0 || lengths.some(empty)) return product;
+    while(true){
+        product.push(index.map((j, i)=>values[i][j]
+        ));
+        let i = j;
+        while(++index[i] === lengths[i]){
+            if (i === 0) return reduce ? product.map(reduce) : product;
+            index[i--] = 0;
+        }
+    }
+}
+exports.default = cross;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"gTBYA":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function cumsum(values, valueof) {
+    var sum = 0, index = 0;
+    return Float64Array.from(values, valueof === undefined ? (v)=>sum += +v || 0
+     : (v)=>sum += +valueof(v, index++, values) || 0
+    );
+}
+exports.default = cumsum;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"3aHVG":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+exports.default = function(a, b) {
+    return b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN;
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"gC5d9":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _varianceJs = require("./variance.js");
+var _varianceJsDefault = parcelHelpers.interopDefault(_varianceJs);
+function deviation(values, valueof) {
+    const v = _varianceJsDefault.default(values, valueof);
+    return v ? Math.sqrt(v) : v;
+}
+exports.default = deviation;
+
+},{"./variance.js":"fFwh7","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"fFwh7":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function variance(values, valueof) {
+    let count = 0;
+    let delta;
+    let mean = 0;
+    let sum = 0;
+    if (valueof === undefined) {
+        for (let value of values)if (value != null && (value = +value) >= value) {
+            delta = value - mean;
+            mean += delta / ++count;
+            sum += delta * (value - mean);
+        }
+    } else {
+        let index = -1;
+        for (let value of values)if ((value = valueof(value, ++index, values)) != null && (value = +value) >= value) {
+            delta = value - mean;
+            mean += delta / ++count;
+            sum += delta * (value - mean);
+        }
+    }
+    if (count > 1) return sum / (count - 1);
+}
+exports.default = variance;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"i65AD":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+exports.default = function(values, valueof) {
+    let min;
+    let max;
+    if (valueof === undefined) {
+        for (const value of values)if (value != null) {
+            if (min === undefined) {
+                if (value >= value) min = max = value;
+            } else {
+                if (min > value) min = value;
+                if (max < value) max = value;
+            }
+        }
+    } else {
+        let index = -1;
+        for (let value of values)if ((value = valueof(value, ++index, values)) != null) {
+            if (min === undefined) {
+                if (value >= value) min = max = value;
+            } else {
+                if (min > value) min = value;
+                if (max < value) max = value;
+            }
+        }
+    }
+    return [
+        min,
+        max
+    ];
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"kNcPo":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+// https://github.com/python/cpython/blob/a74eea238f5baba15797e2e8b570d153bc8690a7/Modules/mathmodule.c#L1423
+parcelHelpers.export(exports, "Adder", ()=>Adder
+);
+parcelHelpers.export(exports, "fsum", ()=>fsum
+);
+parcelHelpers.export(exports, "fcumsum", ()=>fcumsum
+);
+class Adder {
+    constructor(){
+        this._partials = new Float64Array(32);
+        this._n = 0;
+    }
+    add(x) {
+        const p = this._partials;
+        let i = 0;
+        for(let j = 0; j < this._n && j < 32; j++){
+            const y = p[j], hi = x + y, lo = Math.abs(x) < Math.abs(y) ? x - (hi - y) : y - (hi - x);
+            if (lo) p[i++] = lo;
+            x = hi;
+        }
+        p[i] = x;
+        this._n = i + 1;
+        return this;
+    }
+    valueOf() {
+        const p = this._partials;
+        let n = this._n, x, y, lo, hi = 0;
+        if (n > 0) {
+            hi = p[--n];
+            while(n > 0){
+                x = hi;
+                y = p[--n];
+                hi = x + y;
+                lo = y - (hi - x);
+                if (lo) break;
+            }
+            if (n > 0 && (lo < 0 && p[n - 1] < 0 || lo > 0 && p[n - 1] > 0)) {
+                y = lo * 2;
+                x = hi + y;
+                if (y == x - hi) hi = x;
+            }
+        }
+        return hi;
+    }
+}
+function fsum(values, valueof) {
+    const adder = new Adder();
+    if (valueof === undefined) {
+        for (let value of values)if (value = +value) adder.add(value);
+    } else {
+        let index = -1;
+        for (let value of values)if (value = +valueof(value, ++index, values)) adder.add(value);
+    }
+    return +adder;
+}
+function fcumsum(values, valueof) {
+    const adder = new Adder();
+    let index = -1;
+    return Float64Array.from(values, valueof === undefined ? (v)=>adder.add(+v || 0)
+     : (v)=>adder.add(+valueof(v, ++index, values) || 0)
+    );
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"9hlDG":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "groups", ()=>groups1
+);
+parcelHelpers.export(exports, "rollup", ()=>rollup
+);
+parcelHelpers.export(exports, "rollups", ()=>rollups
+);
+parcelHelpers.export(exports, "index", ()=>index1
+);
+parcelHelpers.export(exports, "indexes", ()=>indexes
+);
+var _internmap = require("internmap");
+var _identityJs = require("./identity.js");
+var _identityJsDefault = parcelHelpers.interopDefault(_identityJs);
+function group1(values, ...keys) {
+    return nest(values, _identityJsDefault.default, _identityJsDefault.default, keys);
+}
+exports.default = group1;
+function groups1(values, ...keys) {
+    return nest(values, Array.from, _identityJsDefault.default, keys);
+}
+function rollup(values, reduce, ...keys) {
+    return nest(values, _identityJsDefault.default, reduce, keys);
+}
+function rollups(values, reduce, ...keys) {
+    return nest(values, Array.from, reduce, keys);
+}
+function index1(values, ...keys) {
+    return nest(values, _identityJsDefault.default, unique, keys);
+}
+function indexes(values, ...keys) {
+    return nest(values, Array.from, unique, keys);
+}
+function unique(values) {
+    if (values.length !== 1) throw new Error("duplicate key");
+    return values[0];
+}
+function nest(values2, map, reduce, keys) {
+    return (function regroup(values, i) {
+        if (i >= keys.length) return reduce(values);
+        const groups = new _internmap.InternMap();
+        const keyof = keys[i++];
+        let index = -1;
+        for (const value of values){
+            const key = keyof(value, ++index, values);
+            const group = groups.get(key);
+            if (group) group.push(value);
+            else groups.set(key, [
+                value
+            ]);
+        }
+        for (const [key, values1] of groups)groups.set(key, regroup(values1, i));
+        return map(groups);
+    })(values2, 0);
+}
+
+},{"internmap":"jYc4q","./identity.js":"4zs3O","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"jYc4q":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "InternMap", ()=>InternMap
+);
+parcelHelpers.export(exports, "InternSet", ()=>InternSet
+);
+class InternMap extends Map {
+    constructor(entries, key7 = keyof){
+        super();
+        Object.defineProperties(this, {
+            _intern: {
+                value: new Map()
+            },
+            _key: {
+                value: key7
+            }
+        });
+        if (entries != null) for (const [key1, value] of entries)this.set(key1, value);
+    }
+    get(key2) {
+        return super.get(intern_get(this, key2));
+    }
+    has(key3) {
+        return super.has(intern_get(this, key3));
+    }
+    set(key4, value4) {
+        return super.set(intern_set(this, key4), value4);
+    }
+    delete(key5) {
+        return super.delete(intern_delete(this, key5));
+    }
+}
+class InternSet extends Set {
+    constructor(values, key6 = keyof){
+        super();
+        Object.defineProperties(this, {
+            _intern: {
+                value: new Map()
+            },
+            _key: {
+                value: key6
+            }
+        });
+        if (values != null) for (const value of values)this.add(value);
+    }
+    has(value1) {
+        return super.has(intern_get(this, value1));
+    }
+    add(value2) {
+        return super.add(intern_set(this, value2));
+    }
+    delete(value3) {
+        return super.delete(intern_delete(this, value3));
+    }
+}
+function intern_get({ _intern , _key  }, value) {
+    const key = _key(value);
+    return _intern.has(key) ? _intern.get(key) : value;
+}
+function intern_set({ _intern , _key  }, value) {
+    const key = _key(value);
+    if (_intern.has(key)) return _intern.get(key);
+    _intern.set(key, value);
+    return value;
+}
+function intern_delete({ _intern , _key  }, value) {
+    const key = _key(value);
+    if (_intern.has(key)) {
+        value = _intern.get(value);
+        _intern.delete(key);
+    }
+    return value;
+}
+function keyof(value) {
+    return value !== null && typeof value === "object" ? value.valueOf() : value;
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"4zs3O":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+exports.default = function(x) {
+    return x;
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"9bi08":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _ascendingJs = require("./ascending.js");
+var _ascendingJsDefault = parcelHelpers.interopDefault(_ascendingJs);
+var _groupJs = require("./group.js");
+var _groupJsDefault = parcelHelpers.interopDefault(_groupJs);
+var _sortJs = require("./sort.js");
+var _sortJsDefault = parcelHelpers.interopDefault(_sortJs);
+function groupSort(values, reduce, key1) {
+    return (reduce.length === 1 ? _sortJsDefault.default(_groupJs.rollup(values, reduce, key1), ([ak, av], [bk, bv])=>_ascendingJsDefault.default(av, bv) || _ascendingJsDefault.default(ak, bk)
+    ) : _sortJsDefault.default(_groupJsDefault.default(values, key1), ([ak, av], [bk, bv])=>reduce(av, bv) || _ascendingJsDefault.default(ak, bk)
+    )).map(([key])=>key
+    );
+}
+exports.default = groupSort;
+
+},{"./ascending.js":"is3Cq","./group.js":"9hlDG","./sort.js":"iPqde","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"iPqde":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _ascendingJs = require("./ascending.js");
+var _ascendingJsDefault = parcelHelpers.interopDefault(_ascendingJs);
+var _permuteJs = require("./permute.js");
+var _permuteJsDefault = parcelHelpers.interopDefault(_permuteJs);
+function sort(values, ...F) {
+    if (typeof values[Symbol.iterator] !== "function") throw new TypeError("values is not iterable");
+    values = Array.from(values);
+    let [f1 = _ascendingJsDefault.default] = F;
+    if (f1.length === 1 || F.length > 1) {
+        const index = Uint32Array.from(values, (d, i)=>i
+        );
+        if (F.length > 1) {
+            F = F.map((f)=>values.map(f)
+            );
+            index.sort((i, j)=>{
+                for (const f of F){
+                    const c = _ascendingJsDefault.default(f[i], f[j]);
+                    if (c) return c;
+                }
+            });
+        } else {
+            f1 = values.map(f1);
+            index.sort((i, j)=>_ascendingJsDefault.default(f1[i], f1[j])
+            );
+        }
+        return _permuteJsDefault.default(values, index);
+    }
+    return values.sort(f1);
+}
+exports.default = sort;
+
+},{"./ascending.js":"is3Cq","./permute.js":"lBJIA","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"lBJIA":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+exports.default = function(source, keys) {
+    return Array.from(keys, (key)=>source[key]
+    );
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"e29mp":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _arrayJs = require("./array.js");
+var _bisectJs = require("./bisect.js");
+var _bisectJsDefault = parcelHelpers.interopDefault(_bisectJs);
+var _constantJs = require("./constant.js");
+var _constantJsDefault = parcelHelpers.interopDefault(_constantJs);
+var _extentJs = require("./extent.js");
+var _extentJsDefault = parcelHelpers.interopDefault(_extentJs);
+var _identityJs = require("./identity.js");
+var _identityJsDefault = parcelHelpers.interopDefault(_identityJs);
+var _niceJs = require("./nice.js");
+var _niceJsDefault = parcelHelpers.interopDefault(_niceJs);
+var _ticksJs = require("./ticks.js");
+var _ticksJsDefault = parcelHelpers.interopDefault(_ticksJs);
+var _sturgesJs = require("./threshold/sturges.js");
+var _sturgesJsDefault = parcelHelpers.interopDefault(_sturgesJs);
+exports.default = function() {
+    var value = _identityJsDefault.default, domain = _extentJsDefault.default, threshold = _sturgesJsDefault.default;
+    function histogram(data) {
+        if (!Array.isArray(data)) data = Array.from(data);
+        var i, n = data.length, x, values = new Array(n);
+        for(i = 0; i < n; ++i)values[i] = value(data[i], i, data);
+        var xz = domain(values), x0 = xz[0], x1 = xz[1], tz = threshold(values, x0, x1);
+        // Convert number of thresholds into uniform thresholds, and nice the
+        // default domain accordingly.
+        if (!Array.isArray(tz)) {
+            const max = x1, tn = +tz;
+            if (domain === _extentJsDefault.default) [x0, x1] = _niceJsDefault.default(x0, x1, tn);
+            tz = _ticksJsDefault.default(x0, x1, tn);
+            // If the last threshold is coincident with the domain’s upper bound, the
+            // last bin will be zero-width. If the default domain is used, and this
+            // last threshold is coincident with the maximum input value, we can
+            // extend the niced upper bound by one tick to ensure uniform bin widths;
+            // otherwise, we simply remove the last threshold. Note that we don’t
+            // coerce values or the domain to numbers, and thus must be careful to
+            // compare order (>=) rather than strict equality (===)!
+            if (tz[tz.length - 1] >= x1) {
+                if (max >= x1 && domain === _extentJsDefault.default) {
+                    const step = _ticksJs.tickIncrement(x0, x1, tn);
+                    if (isFinite(step)) {
+                        if (step > 0) x1 = (Math.floor(x1 / step) + 1) * step;
+                        else if (step < 0) x1 = (Math.ceil(x1 * -step) + 1) / -step;
+                    }
+                } else tz.pop();
+            }
+        }
+        // Remove any thresholds outside the domain.
+        var m = tz.length;
+        while(tz[0] <= x0)tz.shift(), --m;
+        while(tz[m - 1] > x1)tz.pop(), --m;
+        var bins = new Array(m + 1), bin;
+        // Initialize bins.
+        for(i = 0; i <= m; ++i){
+            bin = bins[i] = [];
+            bin.x0 = i > 0 ? tz[i - 1] : x0;
+            bin.x1 = i < m ? tz[i] : x1;
+        }
+        // Assign data to bins by value, ignoring any outside the domain.
+        for(i = 0; i < n; ++i){
+            x = values[i];
+            if (x0 <= x && x <= x1) bins[_bisectJsDefault.default(tz, x, 0, m)].push(data[i]);
+        }
+        return bins;
+    }
+    histogram.value = function(_) {
+        return arguments.length ? (value = typeof _ === "function" ? _ : _constantJsDefault.default(_), histogram) : value;
+    };
+    histogram.domain = function(_) {
+        return arguments.length ? (domain = typeof _ === "function" ? _ : _constantJsDefault.default([
+            _[0],
+            _[1]
+        ]), histogram) : domain;
+    };
+    histogram.thresholds = function(_) {
+        return arguments.length ? (threshold = typeof _ === "function" ? _ : Array.isArray(_) ? _constantJsDefault.default(_arrayJs.slice.call(_)) : _constantJsDefault.default(_), histogram) : threshold;
+    };
+    return histogram;
+};
+
+},{"./array.js":"iz59S","./bisect.js":"aBOzL","./constant.js":"gS2I2","./extent.js":"i65AD","./identity.js":"4zs3O","./nice.js":"8MlNU","./ticks.js":"eP3r2","./threshold/sturges.js":"iBhHB","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"iz59S":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "slice", ()=>slice
+);
+parcelHelpers.export(exports, "map", ()=>map
+);
+var array = Array.prototype;
+var slice = array.slice;
+var map = array.map;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"gS2I2":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+exports.default = function(x) {
+    return function() {
+        return x;
+    };
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"8MlNU":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _ticksJs = require("./ticks.js");
+function nice(start, stop, count) {
+    let prestep;
+    while(true){
+        const step = _ticksJs.tickIncrement(start, stop, count);
+        if (step === prestep || step === 0 || !isFinite(step)) return [
+            start,
+            stop
+        ];
+        else if (step > 0) {
+            start = Math.floor(start / step) * step;
+            stop = Math.ceil(stop / step) * step;
+        } else if (step < 0) {
+            start = Math.ceil(start * step) / step;
+            stop = Math.floor(stop * step) / step;
+        }
+        prestep = step;
+    }
+}
+exports.default = nice;
+
+},{"./ticks.js":"eP3r2","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"eP3r2":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "tickIncrement", ()=>tickIncrement
+);
+parcelHelpers.export(exports, "tickStep", ()=>tickStep
+);
+var e10 = Math.sqrt(50), e5 = Math.sqrt(10), e2 = Math.sqrt(2);
+exports.default = function(start, stop, count) {
+    var reverse, i = -1, n, ticks, step;
+    stop = +stop, start = +start, count = +count;
+    if (start === stop && count > 0) return [
+        start
+    ];
+    if (reverse = stop < start) n = start, start = stop, stop = n;
+    if ((step = tickIncrement(start, stop, count)) === 0 || !isFinite(step)) return [];
+    if (step > 0) {
+        let r0 = Math.round(start / step), r1 = Math.round(stop / step);
+        if (r0 * step < start) ++r0;
+        if (r1 * step > stop) --r1;
+        ticks = new Array(n = r1 - r0 + 1);
+        while(++i < n)ticks[i] = (r0 + i) * step;
+    } else {
+        step = -step;
+        let r0 = Math.round(start * step), r1 = Math.round(stop * step);
+        if (r0 / step < start) ++r0;
+        if (r1 / step > stop) --r1;
+        ticks = new Array(n = r1 - r0 + 1);
+        while(++i < n)ticks[i] = (r0 + i) / step;
+    }
+    if (reverse) ticks.reverse();
+    return ticks;
+};
+function tickIncrement(start, stop, count) {
+    var step = (stop - start) / Math.max(0, count), power = Math.floor(Math.log(step) / Math.LN10), error = step / Math.pow(10, power);
+    return power >= 0 ? (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1) * Math.pow(10, power) : -Math.pow(10, -power) / (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1);
+}
+function tickStep(start, stop, count) {
+    var step0 = Math.abs(stop - start) / Math.max(0, count), step1 = Math.pow(10, Math.floor(Math.log(step0) / Math.LN10)), error = step0 / step1;
+    if (error >= e10) step1 *= 10;
+    else if (error >= e5) step1 *= 5;
+    else if (error >= e2) step1 *= 2;
+    return stop < start ? -step1 : step1;
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"iBhHB":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _countJs = require("../count.js");
+var _countJsDefault = parcelHelpers.interopDefault(_countJs);
+exports.default = function(values) {
+    return Math.ceil(Math.log(_countJsDefault.default(values)) / Math.LN2) + 1;
+};
+
+},{"../count.js":"3W7W6","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"YcDJP":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _countJs = require("../count.js");
+var _countJsDefault = parcelHelpers.interopDefault(_countJs);
+var _quantileJs = require("../quantile.js");
+var _quantileJsDefault = parcelHelpers.interopDefault(_quantileJs);
+exports.default = function(values, min, max) {
+    return Math.ceil((max - min) / (2 * (_quantileJsDefault.default(values, 0.75) - _quantileJsDefault.default(values, 0.25)) * Math.pow(_countJsDefault.default(values), -1 / 3)));
+};
+
+},{"../count.js":"3W7W6","../quantile.js":"g22bz","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"g22bz":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "quantileSorted", ()=>quantileSorted
+);
+var _maxJs = require("./max.js");
+var _maxJsDefault = parcelHelpers.interopDefault(_maxJs);
+var _minJs = require("./min.js");
+var _minJsDefault = parcelHelpers.interopDefault(_minJs);
+var _quickselectJs = require("./quickselect.js");
+var _quickselectJsDefault = parcelHelpers.interopDefault(_quickselectJs);
+var _numberJs = require("./number.js");
+var _numberJsDefault = parcelHelpers.interopDefault(_numberJs);
+function quantile(values, p, valueof) {
+    values = Float64Array.from(_numberJs.numbers(values, valueof));
+    if (!(n = values.length)) return;
+    if ((p = +p) <= 0 || n < 2) return _minJsDefault.default(values);
+    if (p >= 1) return _maxJsDefault.default(values);
+    var n, i = (n - 1) * p, i0 = Math.floor(i), value0 = _maxJsDefault.default(_quickselectJsDefault.default(values, i0).subarray(0, i0 + 1)), value1 = _minJsDefault.default(values.subarray(i0 + 1));
+    return value0 + (value1 - value0) * (i - i0);
+}
+exports.default = quantile;
+function quantileSorted(values, p, valueof = _numberJsDefault.default) {
+    if (!(n = values.length)) return;
+    if ((p = +p) <= 0 || n < 2) return +valueof(values[0], 0, values);
+    if (p >= 1) return +valueof(values[n - 1], n - 1, values);
+    var n, i = (n - 1) * p, i0 = Math.floor(i), value0 = +valueof(values[i0], i0, values), value1 = +valueof(values[i0 + 1], i0 + 1, values);
+    return value0 + (value1 - value0) * (i - i0);
+}
+
+},{"./max.js":"aKI7F","./min.js":"ah5VG","./quickselect.js":"fusOg","./number.js":"bMc02","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"aKI7F":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function max1(values, valueof) {
+    let max;
+    if (valueof === undefined) {
+        for (const value of values)if (value != null && (max < value || max === undefined && value >= value)) max = value;
+    } else {
+        let index = -1;
+        for (let value of values)if ((value = valueof(value, ++index, values)) != null && (max < value || max === undefined && value >= value)) max = value;
+    }
+    return max;
+}
+exports.default = max1;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"ah5VG":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function min1(values, valueof) {
+    let min;
+    if (valueof === undefined) {
+        for (const value of values)if (value != null && (min > value || min === undefined && value >= value)) min = value;
+    } else {
+        let index = -1;
+        for (let value of values)if ((value = valueof(value, ++index, values)) != null && (min > value || min === undefined && value >= value)) min = value;
+    }
+    return min;
+}
+exports.default = min1;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"fusOg":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _ascendingJs = require("./ascending.js");
+var _ascendingJsDefault = parcelHelpers.interopDefault(_ascendingJs);
+function quickselect(array, k, left = 0, right = array.length - 1, compare = _ascendingJsDefault.default) {
+    while(right > left){
+        if (right - left > 600) {
+            const n = right - left + 1;
+            const m = k - left + 1;
+            const z = Math.log(n);
+            const s = 0.5 * Math.exp(2 * z / 3);
+            const sd = 0.5 * Math.sqrt(z * s * (n - s) / n) * (m - n / 2 < 0 ? -1 : 1);
+            const newLeft = Math.max(left, Math.floor(k - m * s / n + sd));
+            const newRight = Math.min(right, Math.floor(k + (n - m) * s / n + sd));
+            quickselect(array, k, newLeft, newRight, compare);
+        }
+        const t = array[k];
+        let i = left;
+        let j = right;
+        swap(array, left, k);
+        if (compare(array[right], t) > 0) swap(array, left, right);
+        while(i < j){
+            swap(array, i, j), ++i, --j;
+            while(compare(array[i], t) < 0)++i;
+            while(compare(array[j], t) > 0)--j;
+        }
+        if (compare(array[left], t) === 0) swap(array, left, j);
+        else ++j, swap(array, j, right);
+        if (j <= k) left = j + 1;
+        if (k <= j) right = j - 1;
+    }
+    return array;
+}
+exports.default = quickselect;
+function swap(array, i, j) {
+    const t = array[i];
+    array[i] = array[j];
+    array[j] = t;
+}
+
+},{"./ascending.js":"is3Cq","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"h9Xie":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _countJs = require("../count.js");
+var _countJsDefault = parcelHelpers.interopDefault(_countJs);
+var _deviationJs = require("../deviation.js");
+var _deviationJsDefault = parcelHelpers.interopDefault(_deviationJs);
+exports.default = function(values, min, max) {
+    return Math.ceil((max - min) / (3.5 * _deviationJsDefault.default(values) * Math.pow(_countJsDefault.default(values), -1 / 3)));
+};
+
+},{"../count.js":"3W7W6","../deviation.js":"gC5d9","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"cI4hF":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function maxIndex1(values, valueof) {
+    let max;
+    let maxIndex = -1;
+    let index = -1;
+    if (valueof === undefined) for (const value of values){
+        ++index;
+        if (value != null && (max < value || max === undefined && value >= value)) max = value, maxIndex = index;
+    }
+    else {
+        for (let value of values)if ((value = valueof(value, ++index, values)) != null && (max < value || max === undefined && value >= value)) max = value, maxIndex = index;
+    }
+    return maxIndex;
+}
+exports.default = maxIndex1;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"522BH":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function mean(values, valueof) {
+    let count = 0;
+    let sum = 0;
+    if (valueof === undefined) {
+        for (let value of values)if (value != null && (value = +value) >= value) ++count, sum += value;
+    } else {
+        let index = -1;
+        for (let value of values)if ((value = valueof(value, ++index, values)) != null && (value = +value) >= value) ++count, sum += value;
+    }
+    if (count) return sum / count;
+}
+exports.default = mean;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"25KY1":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _quantileJs = require("./quantile.js");
+var _quantileJsDefault = parcelHelpers.interopDefault(_quantileJs);
+exports.default = function(values, valueof) {
+    return _quantileJsDefault.default(values, 0.5, valueof);
+};
+
+},{"./quantile.js":"g22bz","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"lLqaS":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function* flatten(arrays) {
+    for (const array of arrays)yield* array;
+}
+function merge(arrays) {
+    return Array.from(flatten(arrays));
+}
+exports.default = merge;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"cjolc":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function minIndex1(values, valueof) {
+    let min;
+    let minIndex = -1;
+    let index = -1;
+    if (valueof === undefined) for (const value of values){
+        ++index;
+        if (value != null && (min > value || min === undefined && value >= value)) min = value, minIndex = index;
+    }
+    else {
+        for (let value of values)if ((value = valueof(value, ++index, values)) != null && (min > value || min === undefined && value >= value)) min = value, minIndex = index;
+    }
+    return minIndex;
+}
+exports.default = minIndex1;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"f10CX":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "pair", ()=>pair
+);
+function pairs1(values, pairof = pair) {
+    const pairs = [];
+    let previous;
+    let first = false;
+    for (const value of values){
+        if (first) pairs.push(pairof(previous, value));
+        previous = value;
+        first = true;
+    }
+    return pairs;
+}
+exports.default = pairs1;
+function pair(a, b) {
+    return [
+        a,
+        b
+    ];
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"aFuRJ":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+exports.default = function(start, stop, step) {
+    start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
+    var i = -1, n = Math.max(0, Math.ceil((stop - start) / step)) | 0, range = new Array(n);
+    while(++i < n)range[i] = start + i * step;
+    return range;
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"ewg2M":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _ascendingJs = require("./ascending.js");
+var _ascendingJsDefault = parcelHelpers.interopDefault(_ascendingJs);
+function least(values, compare = _ascendingJsDefault.default) {
+    let min;
+    let defined = false;
+    if (compare.length === 1) {
+        let minValue;
+        for (const element of values){
+            const value = compare(element);
+            if (defined ? _ascendingJsDefault.default(value, minValue) < 0 : _ascendingJsDefault.default(value, value) === 0) {
+                min = element;
+                minValue = value;
+                defined = true;
+            }
+        }
+    } else {
+        for (const value of values)if (defined ? compare(value, min) < 0 : compare(value, value) === 0) {
+            min = value;
+            defined = true;
+        }
+    }
+    return min;
+}
+exports.default = least;
+
+},{"./ascending.js":"is3Cq","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"hCcEV":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _ascendingJs = require("./ascending.js");
+var _ascendingJsDefault = parcelHelpers.interopDefault(_ascendingJs);
+var _minIndexJs = require("./minIndex.js");
+var _minIndexJsDefault = parcelHelpers.interopDefault(_minIndexJs);
+function leastIndex(values, compare = _ascendingJsDefault.default) {
+    if (compare.length === 1) return _minIndexJsDefault.default(values, compare);
+    let minValue;
+    let min = -1;
+    let index = -1;
+    for (const value of values){
+        ++index;
+        if (min < 0 ? compare(value, value) === 0 : compare(value, minValue) < 0) {
+            minValue = value;
+            min = index;
+        }
+    }
+    return min;
+}
+exports.default = leastIndex;
+
+},{"./ascending.js":"is3Cq","./minIndex.js":"cjolc","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"jX3nM":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _ascendingJs = require("./ascending.js");
+var _ascendingJsDefault = parcelHelpers.interopDefault(_ascendingJs);
+function greatest(values, compare = _ascendingJsDefault.default) {
+    let max;
+    let defined = false;
+    if (compare.length === 1) {
+        let maxValue;
+        for (const element of values){
+            const value = compare(element);
+            if (defined ? _ascendingJsDefault.default(value, maxValue) > 0 : _ascendingJsDefault.default(value, value) === 0) {
+                max = element;
+                maxValue = value;
+                defined = true;
+            }
+        }
+    } else {
+        for (const value of values)if (defined ? compare(value, max) > 0 : compare(value, value) === 0) {
+            max = value;
+            defined = true;
+        }
+    }
+    return max;
+}
+exports.default = greatest;
+
+},{"./ascending.js":"is3Cq","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"5lFsk":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _ascendingJs = require("./ascending.js");
+var _ascendingJsDefault = parcelHelpers.interopDefault(_ascendingJs);
+var _maxIndexJs = require("./maxIndex.js");
+var _maxIndexJsDefault = parcelHelpers.interopDefault(_maxIndexJs);
+function greatestIndex(values, compare = _ascendingJsDefault.default) {
+    if (compare.length === 1) return _maxIndexJsDefault.default(values, compare);
+    let maxValue;
+    let max = -1;
+    let index = -1;
+    for (const value of values){
+        ++index;
+        if (max < 0 ? compare(value, value) === 0 : compare(value, maxValue) > 0) {
+            maxValue = value;
+            max = index;
+        }
+    }
+    return max;
+}
+exports.default = greatestIndex;
+
+},{"./ascending.js":"is3Cq","./maxIndex.js":"cI4hF","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"ek53c":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _leastIndexJs = require("./leastIndex.js");
+var _leastIndexJsDefault = parcelHelpers.interopDefault(_leastIndexJs);
+function scan(values, compare) {
+    const index = _leastIndexJsDefault.default(values, compare);
+    return index < 0 ? undefined : index;
+}
+exports.default = scan;
+
+},{"./leastIndex.js":"hCcEV","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"hrDvf":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "shuffler", ()=>shuffler
+);
+exports.default = shuffler(Math.random);
+function shuffler(random) {
+    return function shuffle(array, i0 = 0, i1 = array.length) {
+        let m = i1 - (i0 = +i0);
+        while(m){
+            const i = random() * m-- | 0, t = array[m + i0];
+            array[m + i0] = array[i + i0];
+            array[i + i0] = t;
+        }
+        return array;
+    };
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"5x489":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function sum1(values, valueof) {
+    let sum = 0;
+    if (valueof === undefined) {
+        for (let value of values)if (value = +value) sum += value;
+    } else {
+        let index = -1;
+        for (let value of values)if (value = +valueof(value, ++index, values)) sum += value;
+    }
+    return sum;
+}
+exports.default = sum1;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"eTl2h":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _minJs = require("./min.js");
+var _minJsDefault = parcelHelpers.interopDefault(_minJs);
+exports.default = function(matrix) {
+    if (!(n = matrix.length)) return [];
+    for(var i = -1, m = _minJsDefault.default(matrix, length), transpose = new Array(m); ++i < m;)for(var j = -1, n, row = transpose[i] = new Array(n); ++j < n;)row[j] = matrix[j][i];
+    return transpose;
+};
+function length(d) {
+    return d.length;
+}
+
+},{"./min.js":"ah5VG","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"g6Swo":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _transposeJs = require("./transpose.js");
+var _transposeJsDefault = parcelHelpers.interopDefault(_transposeJs);
+exports.default = function() {
+    return _transposeJsDefault.default(arguments);
+};
+
+},{"./transpose.js":"eTl2h","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"j8w8G":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function every(values, test) {
+    if (typeof test !== "function") throw new TypeError("test is not a function");
+    let index = -1;
+    for (const value of values){
+        if (!test(value, ++index, values)) return false;
+    }
+    return true;
+}
+exports.default = every;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"258kt":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function some(values, test) {
+    if (typeof test !== "function") throw new TypeError("test is not a function");
+    let index = -1;
+    for (const value of values){
+        if (test(value, ++index, values)) return true;
+    }
+    return false;
+}
+exports.default = some;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"kmzCm":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function filter(values, test) {
+    if (typeof test !== "function") throw new TypeError("test is not a function");
+    const array = [];
+    let index = -1;
+    for (const value of values)if (test(value, ++index, values)) array.push(value);
+    return array;
+}
+exports.default = filter;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"g8C0v":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function map(values, mapper) {
+    if (typeof values[Symbol.iterator] !== "function") throw new TypeError("values is not iterable");
+    if (typeof mapper !== "function") throw new TypeError("mapper is not a function");
+    return Array.from(values, (value, index)=>mapper(value, index, values)
+    );
+}
+exports.default = map;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"kJqMu":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function reduce(values, reducer, value) {
+    if (typeof reducer !== "function") throw new TypeError("reducer is not a function");
+    const iterator = values[Symbol.iterator]();
+    let done, next, index = -1;
+    if (arguments.length < 3) {
+        ({ done , value  } = iterator.next());
+        if (done) return;
+        ++index;
+    }
+    while({ done , value: next  } = iterator.next(), !done)value = reducer(value, next, ++index, values);
+    return value;
+}
+exports.default = reduce;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"c5OzD":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function reverse(values) {
+    if (typeof values[Symbol.iterator] !== "function") throw new TypeError("values is not iterable");
+    return Array.from(values).reverse();
+}
+exports.default = reverse;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"4yCN3":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function difference(values, ...others) {
+    values = new Set(values);
+    for (const other of others)for (const value of other)values.delete(value);
+    return values;
+}
+exports.default = difference;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"i51B2":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function disjoint(values, other) {
+    const iterator = other[Symbol.iterator](), set = new Set();
+    for (const v of values){
+        if (set.has(v)) return false;
+        let value, done;
+        while({ value , done  } = iterator.next()){
+            if (done) break;
+            if (Object.is(v, value)) return false;
+            set.add(value);
+        }
+    }
+    return true;
+}
+exports.default = disjoint;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"xQI0g":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _setJs = require("./set.js");
+var _setJsDefault = parcelHelpers.interopDefault(_setJs);
+function intersection(values, ...others) {
+    values = new Set(values);
+    others = others.map(_setJsDefault.default);
+    out: for (const value of values){
+        for (const other of others)if (!other.has(value)) {
+            values.delete(value);
+            continue out;
+        }
+    }
+    return values;
+}
+exports.default = intersection;
+
+},{"./set.js":"j3rvb","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"j3rvb":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function set(values) {
+    return values instanceof Set ? values : new Set(values);
+}
+exports.default = set;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"bSPhW":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _supersetJs = require("./superset.js");
+var _supersetJsDefault = parcelHelpers.interopDefault(_supersetJs);
+function subset(values, other) {
+    return _supersetJsDefault.default(other, values);
+}
+exports.default = subset;
+
+},{"./superset.js":"30CTh","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"30CTh":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function superset(values, other) {
+    const iterator = values[Symbol.iterator](), set = new Set();
+    for (const o of other){
+        if (set.has(o)) continue;
+        let value, done;
+        while({ value , done  } = iterator.next()){
+            if (done) return false;
+            set.add(value);
+            if (Object.is(o, value)) break;
+        }
+    }
+    return true;
+}
+exports.default = superset;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"byxPk":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function union(...others) {
+    const set = new Set();
+    for (const other of others)for (const o of other)set.add(o);
+    return set;
+}
+exports.default = union;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"bVqI5":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$9d61 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -23251,7 +24779,7 @@ function Header({ onClose  }) {
                                 __self: this
                             }),
                             /*#__PURE__*/ _jsxRuntime.jsx("h3", {
-                                className: _classnamesDefault.default(_bootstrapModuleScss['fs-6'], _bootstrapModuleScss['ms-2'], _bootstrapModuleScss['my-0'], _bootstrapModuleScss['p-0']),
+                                className: _classnamesDefault.default(_bootstrapModuleScss['ms-2'], _bootstrapModuleScss['my-0'], _bootstrapModuleScss['p-0'], _headerModuleScss.title),
                                 __source: {
                                     fileName: "src/components/header/header.js",
                                     lineNumber: 33,
@@ -23266,6 +24794,9 @@ function Header({ onClose  }) {
                         onClick: onClose,
                         type: "button",
                         className: _classnamesDefault.default(_bootstrapModuleScss.btn, _bootstrapModuleScss['btn-sm'], _bootstrapModuleScss['btn-close']),
+                        style: {
+                            fontSize: '14px'
+                        },
                         "aria-label": "Close",
                         __source: {
                             fileName: "src/components/header/header.js",
@@ -23289,8 +24820,12 @@ $RefreshReg$(_c, "Header");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-runtime":"6Ds2u","react":"4mchR","classnames":"2cVcN","bundle-text:./logo.svg":"5mLnO","../../styles/bootstrap.module.scss":"5tHoS","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"9pz13","./header.module.scss":"fZ7oT"}],"5mLnO":[function(require,module,exports) {
+},{"react/jsx-runtime":"6Ds2u","react":"4mchR","classnames":"2cVcN","bundle-text:./logo.svg":"5mLnO","./header.module.scss":"fZ7oT","../../styles/bootstrap.module.scss":"5tHoS","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"9pz13"}],"5mLnO":[function(require,module,exports) {
 module.exports = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg width=\"24px\" height=\"20px\" viewBox=\"0 0 30 20\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <!-- Generator: Sketch 51.1 (57501) - http://www.bohemiancoding.com/sketch -->\n    <title>logo-horizontal-white</title>\n    <desc>Created with Sketch.</desc>\n    <defs></defs>\n    <g>\n      <path fill=\"#007ee5\" xmlns=\"http://www.w3.org/2000/svg\" d=\"M20.9216058,3.45145455 L18.3040292,3.45145455 C17.7071095,3.45145455 17.2251387,3.84372727 17.2251387,4.32781818 L17.2251387,5.75781818 C17.2251387,5.84963636 17.2251387,5.94190909 17.2708467,6.03463636 C17.8220584,5.36554545 18.6715036,4.92736364 19.6128175,4.92736364 C20.2997956,4.92736364 21.4035766,5.34236364 21.9547883,6.011 C21.9778686,5.94190909 22.0004964,5.84963636 22.0004964,5.75781818 L22.0004964,4.32781818 C22.0004964,3.84372727 21.5185255,3.45145455 20.9216058,3.45145455\" id=\"Fill-17\"></path>\n      <path fill=\"#007ee5\" d=\"M15.3857752,15.2275 C15.0762277,15.2861364 14.7675854,15.3193182 14.4616584,15.3311364 C14.1557314,15.3193182 13.8470891,15.2861364 13.5375416,15.2275 C11.3145927,14.8070455 9.58990657,13.2347727 8.82825693,11.2170455 C9.90488467,12.4470455 12.0508993,13.0838636 14.4616584,13.1115909 C16.8724175,13.0838636 19.0184321,12.4470455 20.0946073,11.2170455 C19.3334102,13.2347727 17.6087241,14.8070455 15.3857752,15.2275 Z M6.97187737,4.67795455 L6.97187737,6.10795455 C6.97187737,6.26977273 7.02889927,6.41977273 7.12348321,6.54977273 C6.27403796,6.63295455 5.46396496,6.7475 4.70503066,6.90840909 C5.11142482,5.86568182 5.96675328,4.19295455 6.98273869,3.1375 C7.16195036,2.96113636 7.8616,2.33204545 8.90926423,2.1475 C9.41974599,2.06886364 11.2485197,1.79386364 14.0905635,1.79386364 L14.4797606,1.79386364 L14.8689577,1.79386364 C17.711454,1.79386364 19.5397752,2.06886364 20.0502569,2.1475 C21.0979212,2.33204545 21.7975708,2.96113636 21.9767825,3.1375 C22.9927679,4.19295455 23.8485489,5.86568182 24.2544905,6.90840909 C22.6406803,6.56522727 20.8024029,6.42840909 18.8260964,6.3775 C18.607965,6.37295455 18.0105927,6.35977273 17.4562131,6.3525 L16.9199358,6.3525 C16.5112788,6.35113636 16.0990015,6.35113636 15.681746,6.3525 L14.4797606,6.3525 L13.2777752,6.3525 C12.8609723,6.35113636 12.4482423,6.35113636 12.0395854,6.3525 L11.7033372,6.3525 C11.7313956,6.27477273 11.7476876,6.1925 11.7476876,6.10795455 L11.7476876,4.67795455 C11.7476876,4.19386364 11.2657168,3.80159091 10.6687971,3.80159091 L8.05122044,3.80159091 C7.45430073,3.80159091 6.97187737,4.19386364 6.97187737,4.67795455 Z M23.1434686,13.8920455 C22.3085051,13.8088636 21.6332934,13.1311364 21.5504759,12.2925 C21.4386949,11.1597727 22.3791036,10.2152273 23.5073226,10.3275 C24.3418336,10.4102273 25.0170453,11.0888636 25.0998628,11.9265909 C25.2116438,13.0597727 24.271235,14.0043182 23.1434686,13.8920455 Z M5.4485781,13.8920455 C4.6136146,13.8088636 3.93840292,13.1311364 3.8555854,12.2925 C3.74380438,11.1597727 4.68421314,10.2152273 5.81243212,10.3275 C6.64739562,10.4102273 7.3226073,11.0888636 7.40497226,11.9265909 C7.51675328,13.0597727 6.57634453,14.0043182 5.4485781,13.8920455 Z M28.9017752,5.87068182 C28.8904613,5.45340909 28.5356584,5.13022727 28.1202131,5.14204545 L26.4588847,5.18795455 C26.085527,5.19840909 25.7868409,5.4875 25.7393226,5.84931818 C25.7284613,5.9325 25.7103591,6.01386364 25.6890891,6.09431818 L25.5021839,5.72477273 C24.8247095,4.46613636 23.899235,2.95431818 22.969235,2.00204545 L22.9701401,2.00204545 C22.9701401,2.00204545 22.1532788,0.996136364 20.5154832,0.663409091 C20.5123153,0.6625 20.5096,0.662045455 20.5064321,0.661590909 C19.0799796,0.355681818 16.7565635,0.277045455 14.4797606,0.293409091 C12.2029577,0.277045455 9.87954161,0.355681818 8.45308905,0.661590909 C8.44992117,0.662045455 8.44720584,0.6625 8.44403796,0.663409091 C6.80669489,0.996136364 5.98938102,2.00204545 5.98938102,2.00204545 L5.99028613,2.00204545 C5.06028613,2.95431818 4.13526423,4.46613636 3.45733723,5.72477273 L3.24780438,6.14068182 C3.22065109,6.04431818 3.19666569,5.94795455 3.18354161,5.84931818 C3.13602336,5.4875 2.83778978,5.19840909 2.46397956,5.18795455 L0.802651095,5.14204545 C0.387658394,5.13022727 0.0328554745,5.45340909 0.0215416058,5.87068182 L0.000271532847,6.68340909 C-0.0110423358,7.10068182 0.310724088,7.45659091 0.726169343,7.46840909 L2.4915854,7.67340909 L2.51330803,7.63840909 C2.50018394,7.66795455 2.48751241,7.69704545 2.47710365,7.72204545 C1.89285547,8.39386364 1.53850511,9.18022727 1.43351241,9.80977273 C1.24298686,10.4643182 1.13573139,11.2975 1.13573139,12.3638636 C1.13573139,13.8929545 1.5516292,15.9784091 1.6516438,16.9952273 L1.6516438,18.5088636 C1.6516438,19.2634091 2.26032993,19.8752273 3.01202336,19.8752273 L4.85844672,19.8752273 C5.60968759,19.8752273 6.21882628,19.2634091 6.21882628,18.5088636 L6.21882628,17.3834091 C8.15349781,17.2052273 11.309162,17.1447727 14.4797606,17.1388636 C17.6503591,17.1447727 20.8060234,17.2052273 22.7406949,17.3834091 L22.7406949,18.5088636 C22.7406949,19.2634091 23.3498336,19.8752273 24.1010745,19.8752273 L25.9474978,19.8752273 C26.6991912,19.8752273 27.3078774,19.2634091 27.3078774,18.5088636 L27.3078774,16.9952273 C27.407892,15.9784091 27.8237898,13.8929545 27.8237898,12.3638636 C27.8237898,9.99568182 26.9476438,8.32522727 26.4824175,7.72204545 C26.4760818,7.70659091 26.4679358,7.68795455 26.4602423,7.67022727 L28.1971474,7.46840909 C28.6121401,7.45659091 28.9343591,7.10068182 28.9230453,6.68340909 L28.9017752,5.87068182 Z\" id=\"Fill-19\"></path>\n    </g>\n</svg>\n";
+
+},{}],"fZ7oT":[function(require,module,exports) {
+module.exports["edm-ext-header"] = "_edm-ext-header_4a554d";
+module.exports["title"] = "_title_4a554d";
 
 },{}],"5tHoS":[function(require,module,exports) {
 module.exports["edm-ext"] = "_edm-ext_29a027";
@@ -25171,10 +26706,7 @@ function registerExportsForReactRefresh(module) {
     }
 }
 
-},{"react-refresh/runtime":"aeH4U"}],"fZ7oT":[function(require,module,exports) {
-module.exports["edm-ext-header"] = "_edm-ext-header_4a554d";
-
-},{}],"cjcYe":[function(require,module,exports) {
+},{"react-refresh/runtime":"aeH4U"}],"cjcYe":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$9aa9 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -25208,7 +26740,7 @@ $RefreshReg$(_c, "Loading");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-runtime":"6Ds2u","react":"4mchR","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"9pz13","./loading.module.scss":"ktBed"}],"ktBed":[function(require,module,exports) {
+},{"react/jsx-runtime":"6Ds2u","react":"4mchR","./loading.module.scss":"ktBed","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"9pz13"}],"ktBed":[function(require,module,exports) {
 module.exports["lds-dual-ring"] = "_lds-dual-ring_05dfc4";
 
 },{}],"7ILtu":[function(require,module,exports) {
@@ -25227,12 +26759,13 @@ var _classnames = require("classnames");
 var _classnamesDefault = parcelHelpers.interopDefault(_classnames);
 var _vehicle = require("../../core/vehicle/vehicle");
 var _bootstrapModuleScss = require("../../styles/bootstrap.module.scss");
-function Cards({ invenotries  }) {
+var _d3Format = require("d3-format");
+function Cards({ invenotries , inventory: mainVehicle  }) {
     return(/*#__PURE__*/ _jsxRuntime.jsx("div", {
         className: _classnamesDefault.default(_bootstrapModuleScss['container-fluid'], _bootstrapModuleScss['overflow-auto']),
         __source: {
             fileName: "src/components/cards/cards.js",
-            lineNumber: 8,
+            lineNumber: 9,
             columnNumber: 5
         },
         __self: this,
@@ -25240,15 +26773,24 @@ function Cards({ invenotries  }) {
             className: _classnamesDefault.default(_bootstrapModuleScss['card-group'], _bootstrapModuleScss['d-flex'], _bootstrapModuleScss['flex-row'], _bootstrapModuleScss['flex-nowrap']),
             __source: {
                 fileName: "src/components/cards/cards.js",
-                lineNumber: 9,
+                lineNumber: 10,
                 columnNumber: 7
             },
             __self: this,
-            children: invenotries?.length > 0 && invenotries.map((inventory)=>/*#__PURE__*/ _jsxRuntime.jsx("div", {
-                    className: _classnamesDefault.default(_bootstrapModuleScss['col-6'], _bootstrapModuleScss['me-2']),
+            children: invenotries?.length > 0 && invenotries.map((inventory)=>/*#__PURE__*/ _jsxRuntime.jsx("a", {
+                    href: _vehicle.vehicle.getEdmundsVdp({
+                        ...mainVehicle,
+                        ...inventory
+                    }),
+                    rel: "noreferrer",
+                    target: "_blank",
+                    style: {
+                        color: '#555'
+                    },
+                    className: _classnamesDefault.default(_bootstrapModuleScss['col-6'], _bootstrapModuleScss['me-2'], _bootstrapModuleScss['text-decoration-none']),
                     __source: {
                         fileName: "src/components/cards/cards.js",
-                        lineNumber: 19,
+                        lineNumber: 20,
                         columnNumber: 13
                     },
                     __self: this,
@@ -25256,18 +26798,21 @@ function Cards({ invenotries  }) {
                         className: _classnamesDefault.default(_bootstrapModuleScss.card),
                         __source: {
                             fileName: "src/components/cards/cards.js",
-                            lineNumber: 23,
+                            lineNumber: 35,
                             columnNumber: 15
                         },
                         __self: this,
                         children: [
                             /*#__PURE__*/ _jsxRuntime.jsx("img", {
-                                src: inventory.imageSrc,
+                                src: inventory.imageUrl,
+                                style: {
+                                    minHeight: 94.16
+                                },
                                 className: _classnamesDefault.default(_bootstrapModuleScss['card-img-top']),
                                 alt: "Image inventory",
                                 __source: {
                                     fileName: "src/components/cards/cards.js",
-                                    lineNumber: 24,
+                                    lineNumber: 36,
                                     columnNumber: 17
                                 },
                                 __self: this
@@ -25276,33 +26821,71 @@ function Cards({ invenotries  }) {
                                 className: _classnamesDefault.default(_bootstrapModuleScss['card-body']),
                                 __source: {
                                     fileName: "src/components/cards/cards.js",
-                                    lineNumber: 29,
+                                    lineNumber: 42,
                                     columnNumber: 17
                                 },
                                 __self: this,
                                 children: [
                                     /*#__PURE__*/ _jsxRuntime.jsxs("h5", {
+                                        style: {
+                                            fontSize: '20px',
+                                            color: '#555'
+                                        },
                                         className: _classnamesDefault.default(_bootstrapModuleScss['card-title']),
                                         __source: {
                                             fileName: "src/components/cards/cards.js",
-                                            lineNumber: 30,
+                                            lineNumber: 43,
                                             columnNumber: 19
                                         },
                                         __self: this,
                                         children: [
                                             "$",
-                                            inventory.price
+                                            inventory.displayPrice
                                         ]
                                     }),
                                     /*#__PURE__*/ _jsxRuntime.jsx("p", {
                                         className: _classnamesDefault.default(_bootstrapModuleScss['card-text']),
                                         __source: {
                                             fileName: "src/components/cards/cards.js",
-                                            lineNumber: 31,
+                                            lineNumber: 49,
                                             columnNumber: 19
                                         },
                                         __self: this,
-                                        children: _vehicle.vehicle.getTitle(inventory)
+                                        children: _vehicle.vehicle.getTitle(mainVehicle)
+                                    }),
+                                    /*#__PURE__*/ _jsxRuntime.jsxs("p", {
+                                        style: {
+                                            color: '#767676',
+                                            fontSize: '12px'
+                                        },
+                                        className: _classnamesDefault.default(_bootstrapModuleScss['card-text']),
+                                        __source: {
+                                            fileName: "src/components/cards/cards.js",
+                                            lineNumber: 52,
+                                            columnNumber: 19
+                                        },
+                                        __self: this,
+                                        children: [
+                                            _d3Format.format(',.3r')(inventory.mileage),
+                                            " miles"
+                                        ]
+                                    }),
+                                    /*#__PURE__*/ _jsxRuntime.jsxs("p", {
+                                        style: {
+                                            color: '#767676',
+                                            fontSize: '12px'
+                                        },
+                                        className: _classnamesDefault.default(_bootstrapModuleScss, _bootstrapModuleScss['mt-2']),
+                                        __source: {
+                                            fileName: "src/components/cards/cards.js",
+                                            lineNumber: 58,
+                                            columnNumber: 19
+                                        },
+                                        __self: this,
+                                        children: [
+                                            _d3Format.format(',.2r')(inventory.distance),
+                                            " miles away"
+                                        ]
                                     })
                                 ]
                             })
@@ -25323,15 +26906,16 @@ $RefreshReg$(_c, "Cards");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-runtime":"6Ds2u","react":"4mchR","classnames":"2cVcN","../../core/vehicle/vehicle":"6NK9j","../../styles/bootstrap.module.scss":"5tHoS","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"9pz13"}],"6NK9j":[function(require,module,exports) {
+},{"react/jsx-runtime":"6Ds2u","react":"4mchR","classnames":"2cVcN","../../core/vehicle/vehicle":"6NK9j","../../styles/bootstrap.module.scss":"5tHoS","d3-format":"hzInr","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"9pz13"}],"6NK9j":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "vehicle", ()=>vehicle
+parcelHelpers.export(exports, "vehicle", ()=>vehicle1
 );
 const SRP_UNIQUE_VINS_THRESHOLD = 6;
 const REGEXP_TEST_VIN = /[^\Wioq]{17}/;
 const REGEXP_MATCH_VIN = /[^\Wioq]{17}/g;
 const REGEXP_CONTENT_VIN = />([^\Wioq<]{17})</gi;
+const REGEXP_CONTENT_PRICE = /\$([\d,]+)/gm;
 /**
  *
  * @param {array} values
@@ -25410,6 +26994,20 @@ const getContentVins = ()=>{
     }
     return result;
 };
+const getContentPrice = ()=>{
+    REGEXP_CONTENT_PRICE.lastIndex = 0;
+    const contentText = document.body.innerHTML;
+    const result = [];
+    let match;
+    // eslint-disable-next-line no-cond-assign
+    while((match = REGEXP_CONTENT_PRICE.exec(contentText)) !== null){
+        // This is necessary to avoid infinite loops with zero-width matches
+        if (match.index === REGEXP_CONTENT_PRICE.lastIndex) REGEXP_CONTENT_PRICE.lastIndex += 1;
+        // if we match smth
+        if (match[1]) result.push(match[1]);
+    }
+    return result;
+};
 const getPageTitleVIN = ()=>{
     const VINs = document.title.match(REGEXP_MATCH_VIN);
     return VINs && VINs.length === 1 ? VINs[0] : null;
@@ -25427,14 +27025,426 @@ function getPageVin() {
     return getPageVIN();
 }
 function getTitle(inventory) {
-    return `${inventory.status} ${inventory.year} ${inventory.make} ${inventory.model}`;
+    return `${inventory.year} ${inventory.make} ${inventory.model} ${inventory.trim}`;
 }
-const vehicle = {
+function getEdmundsVdp(vehicle) {
+    let source = '';
+    if (!vehicle || !vehicle.make || !vehicle.model || !vehicle.year || !vehicle.vin) return null;
+    source = ('https://www.edmunds.com/' + vehicle.make.toLowerCase() + '/' + vehicle.model.toLowerCase() + '/' + vehicle.year + '/vin/' + vehicle.vin.toUpperCase() + '/').replace(/\s/g, '-');
+    return source + '?utm_source=edm_ext';
+}
+const vehicle1 = {
     getPageVin,
-    getTitle
+    getTitle,
+    getContentPrice,
+    getEdmundsVdp
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"5tplp":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"hzInr":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "formatDefaultLocale", ()=>_defaultLocaleJsDefault.default
+);
+parcelHelpers.export(exports, "format", ()=>_defaultLocaleJs.format
+);
+parcelHelpers.export(exports, "formatPrefix", ()=>_defaultLocaleJs.formatPrefix
+);
+parcelHelpers.export(exports, "formatLocale", ()=>_localeJsDefault.default
+);
+parcelHelpers.export(exports, "formatSpecifier", ()=>_formatSpecifierJsDefault.default
+);
+parcelHelpers.export(exports, "FormatSpecifier", ()=>_formatSpecifierJs.FormatSpecifier
+);
+parcelHelpers.export(exports, "precisionFixed", ()=>_precisionFixedJsDefault.default
+);
+parcelHelpers.export(exports, "precisionPrefix", ()=>_precisionPrefixJsDefault.default
+);
+parcelHelpers.export(exports, "precisionRound", ()=>_precisionRoundJsDefault.default
+);
+var _defaultLocaleJs = require("./defaultLocale.js");
+var _defaultLocaleJsDefault = parcelHelpers.interopDefault(_defaultLocaleJs);
+var _localeJs = require("./locale.js");
+var _localeJsDefault = parcelHelpers.interopDefault(_localeJs);
+var _formatSpecifierJs = require("./formatSpecifier.js");
+var _formatSpecifierJsDefault = parcelHelpers.interopDefault(_formatSpecifierJs);
+var _precisionFixedJs = require("./precisionFixed.js");
+var _precisionFixedJsDefault = parcelHelpers.interopDefault(_precisionFixedJs);
+var _precisionPrefixJs = require("./precisionPrefix.js");
+var _precisionPrefixJsDefault = parcelHelpers.interopDefault(_precisionPrefixJs);
+var _precisionRoundJs = require("./precisionRound.js");
+var _precisionRoundJsDefault = parcelHelpers.interopDefault(_precisionRoundJs);
+
+},{"./defaultLocale.js":"2xO5L","./locale.js":"j5r27","./formatSpecifier.js":"55yO4","./precisionFixed.js":"e3JIq","./precisionPrefix.js":"7GxX5","./precisionRound.js":"1ZF1R","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"2xO5L":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "format", ()=>format
+);
+parcelHelpers.export(exports, "formatPrefix", ()=>formatPrefix
+);
+var _localeJs = require("./locale.js");
+var _localeJsDefault = parcelHelpers.interopDefault(_localeJs);
+var locale;
+var format;
+var formatPrefix;
+defaultLocale({
+    thousands: ",",
+    grouping: [
+        3
+    ],
+    currency: [
+        "$",
+        ""
+    ]
+});
+function defaultLocale(definition) {
+    locale = _localeJsDefault.default(definition);
+    format = locale.format;
+    formatPrefix = locale.formatPrefix;
+    return locale;
+}
+exports.default = defaultLocale;
+
+},{"./locale.js":"j5r27","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"j5r27":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _exponentJs = require("./exponent.js");
+var _exponentJsDefault = parcelHelpers.interopDefault(_exponentJs);
+var _formatGroupJs = require("./formatGroup.js");
+var _formatGroupJsDefault = parcelHelpers.interopDefault(_formatGroupJs);
+var _formatNumeralsJs = require("./formatNumerals.js");
+var _formatNumeralsJsDefault = parcelHelpers.interopDefault(_formatNumeralsJs);
+var _formatSpecifierJs = require("./formatSpecifier.js");
+var _formatSpecifierJsDefault = parcelHelpers.interopDefault(_formatSpecifierJs);
+var _formatTrimJs = require("./formatTrim.js");
+var _formatTrimJsDefault = parcelHelpers.interopDefault(_formatTrimJs);
+var _formatTypesJs = require("./formatTypes.js");
+var _formatTypesJsDefault = parcelHelpers.interopDefault(_formatTypesJs);
+var _formatPrefixAutoJs = require("./formatPrefixAuto.js");
+var _identityJs = require("./identity.js");
+var _identityJsDefault = parcelHelpers.interopDefault(_identityJs);
+var map = Array.prototype.map, prefixes = [
+    "y",
+    "z",
+    "a",
+    "f",
+    "p",
+    "n",
+    "µ",
+    "m",
+    "",
+    "k",
+    "M",
+    "G",
+    "T",
+    "P",
+    "E",
+    "Z",
+    "Y"
+];
+exports.default = function(locale) {
+    var group = locale.grouping === undefined || locale.thousands === undefined ? _identityJsDefault.default : _formatGroupJsDefault.default(map.call(locale.grouping, Number), locale.thousands + ""), currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "", currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "", decimal = locale.decimal === undefined ? "." : locale.decimal + "", numerals = locale.numerals === undefined ? _identityJsDefault.default : _formatNumeralsJsDefault.default(map.call(locale.numerals, String)), percent = locale.percent === undefined ? "%" : locale.percent + "", minus = locale.minus === undefined ? "−" : locale.minus + "", nan = locale.nan === undefined ? "NaN" : locale.nan + "";
+    function newFormat(specifier) {
+        specifier = _formatSpecifierJsDefault.default(specifier);
+        var fill = specifier.fill, align = specifier.align, sign = specifier.sign, symbol = specifier.symbol, zero = specifier.zero, width = specifier.width, comma = specifier.comma, precision = specifier.precision, trim = specifier.trim, type = specifier.type;
+        // The "n" type is an alias for ",g".
+        if (type === "n") comma = true, type = "g";
+        else if (!_formatTypesJsDefault.default[type]) precision === undefined && (precision = 12), trim = true, type = "g";
+        // If zero fill is specified, padding goes after sign and before digits.
+        if (zero || fill === "0" && align === "=") zero = true, fill = "0", align = "=";
+        // Compute the prefix and suffix.
+        // For SI-prefix, the suffix is lazily computed.
+        var prefix = symbol === "$" ? currencyPrefix : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "", suffix = symbol === "$" ? currencySuffix : /[%p]/.test(type) ? percent : "";
+        // What format function should we use?
+        // Is this an integer type?
+        // Can this type generate exponential notation?
+        var formatType = _formatTypesJsDefault.default[type], maybeSuffix = /[defgprs%]/.test(type);
+        // Set the default precision if not specified,
+        // or clamp the specified precision to the supported range.
+        // For significant precision, it must be in [1, 21].
+        // For fixed precision, it must be in [0, 20].
+        precision = precision === undefined ? 6 : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision)) : Math.max(0, Math.min(20, precision));
+        function format(value) {
+            var valuePrefix = prefix, valueSuffix = suffix, i, n, c;
+            if (type === "c") {
+                valueSuffix = formatType(value) + valueSuffix;
+                value = "";
+            } else {
+                value = +value;
+                // Determine the sign. -0 is not less than 0, but 1 / -0 is!
+                var valueNegative = value < 0 || 1 / value < 0;
+                // Perform the initial formatting.
+                value = isNaN(value) ? nan : formatType(Math.abs(value), precision);
+                // Trim insignificant zeros.
+                if (trim) value = _formatTrimJsDefault.default(value);
+                // If a negative value rounds to zero after formatting, and no explicit positive sign is requested, hide the sign.
+                if (valueNegative && +value === 0 && sign !== "+") valueNegative = false;
+                // Compute the prefix and suffix.
+                valuePrefix = (valueNegative ? sign === "(" ? sign : minus : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
+                valueSuffix = (type === "s" ? prefixes[8 + _formatPrefixAutoJs.prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+                // Break the formatted value into the integer “value” part that can be
+                // grouped, and fractional or exponential “suffix” part that is not.
+                if (maybeSuffix) {
+                    i = -1, n = value.length;
+                    while(++i < n)if (c = value.charCodeAt(i), 48 > c || c > 57) {
+                        valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
+                        value = value.slice(0, i);
+                        break;
+                    }
+                }
+            }
+            // If the fill character is not "0", grouping is applied before padding.
+            if (comma && !zero) value = group(value, Infinity);
+            // Compute the padding.
+            var length = valuePrefix.length + value.length + valueSuffix.length, padding = length < width ? new Array(width - length + 1).join(fill) : "";
+            // If the fill character is "0", grouping is applied after padding.
+            if (comma && zero) value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = "";
+            // Reconstruct the final output based on the desired alignment.
+            switch(align){
+                case "<":
+                    value = valuePrefix + value + valueSuffix + padding;
+                    break;
+                case "=":
+                    value = valuePrefix + padding + value + valueSuffix;
+                    break;
+                case "^":
+                    value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length);
+                    break;
+                default:
+                    value = padding + valuePrefix + value + valueSuffix;
+                    break;
+            }
+            return numerals(value);
+        }
+        format.toString = function() {
+            return specifier + "";
+        };
+        return format;
+    }
+    function formatPrefix(specifier, value1) {
+        var f = newFormat((specifier = _formatSpecifierJsDefault.default(specifier), specifier.type = "f", specifier)), e = Math.max(-8, Math.min(8, Math.floor(_exponentJsDefault.default(value1) / 3))) * 3, k = Math.pow(10, -e), prefix = prefixes[8 + e / 3];
+        return function(value) {
+            return f(k * value) + prefix;
+        };
+    }
+    return {
+        format: newFormat,
+        formatPrefix: formatPrefix
+    };
+};
+
+},{"./exponent.js":"6DGHE","./formatGroup.js":"cmI8S","./formatNumerals.js":"eiMiB","./formatSpecifier.js":"55yO4","./formatTrim.js":"4KDv5","./formatTypes.js":"8CE7u","./formatPrefixAuto.js":"4a8Al","./identity.js":"dcSc8","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"6DGHE":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _formatDecimalJs = require("./formatDecimal.js");
+exports.default = function(x) {
+    return x = _formatDecimalJs.formatDecimalParts(Math.abs(x)), x ? x[1] : NaN;
+};
+
+},{"./formatDecimal.js":"eFLdP","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"eFLdP":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+// Computes the decimal coefficient and exponent of the specified number x with
+// significant digits p, where x is positive and p is in [1, 21] or undefined.
+// For example, formatDecimalParts(1.23) returns ["123", 0].
+parcelHelpers.export(exports, "formatDecimalParts", ()=>formatDecimalParts
+);
+exports.default = function(x) {
+    return Math.abs(x = Math.round(x)) >= 1000000000000000000000 ? x.toLocaleString("en").replace(/,/g, "") : x.toString(10);
+};
+function formatDecimalParts(x, p) {
+    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
+    var i, coefficient = x.slice(0, i);
+    // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
+    // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
+    return [
+        coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient,
+        +x.slice(i + 1)
+    ];
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"cmI8S":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+exports.default = function(grouping, thousands) {
+    return function(value, width) {
+        var i = value.length, t = [], j = 0, g = grouping[0], length = 0;
+        while(i > 0 && g > 0){
+            if (length + g + 1 > width) g = Math.max(1, width - length);
+            t.push(value.substring(i -= g, i + g));
+            if ((length += g + 1) > width) break;
+            g = grouping[j = (j + 1) % grouping.length];
+        }
+        return t.reverse().join(thousands);
+    };
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"eiMiB":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+exports.default = function(numerals) {
+    return function(value) {
+        return value.replace(/[0-9]/g, function(i) {
+            return numerals[+i];
+        });
+    };
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"55yO4":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "FormatSpecifier", ()=>FormatSpecifier
+);
+// [[fill]align][sign][symbol][0][width][,][.precision][~][type]
+var re = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+function formatSpecifier(specifier) {
+    if (!(match = re.exec(specifier))) throw new Error("invalid format: " + specifier);
+    var match;
+    return new FormatSpecifier({
+        fill: match[1],
+        align: match[2],
+        sign: match[3],
+        symbol: match[4],
+        zero: match[5],
+        width: match[6],
+        comma: match[7],
+        precision: match[8] && match[8].slice(1),
+        trim: match[9],
+        type: match[10]
+    });
+}
+exports.default = formatSpecifier;
+formatSpecifier.prototype = FormatSpecifier.prototype; // instanceof
+function FormatSpecifier(specifier) {
+    this.fill = specifier.fill === undefined ? " " : specifier.fill + "";
+    this.align = specifier.align === undefined ? ">" : specifier.align + "";
+    this.sign = specifier.sign === undefined ? "-" : specifier.sign + "";
+    this.symbol = specifier.symbol === undefined ? "" : specifier.symbol + "";
+    this.zero = !!specifier.zero;
+    this.width = specifier.width === undefined ? undefined : +specifier.width;
+    this.comma = !!specifier.comma;
+    this.precision = specifier.precision === undefined ? undefined : +specifier.precision;
+    this.trim = !!specifier.trim;
+    this.type = specifier.type === undefined ? "" : specifier.type + "";
+}
+FormatSpecifier.prototype.toString = function() {
+    return this.fill + this.align + this.sign + this.symbol + (this.zero ? "0" : "") + (this.width === undefined ? "" : Math.max(1, this.width | 0)) + (this.comma ? "," : "") + (this.precision === undefined ? "" : "." + Math.max(0, this.precision | 0)) + (this.trim ? "~" : "") + this.type;
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"4KDv5":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+exports.default = function(s) {
+    out: for(var n = s.length, i = 1, i0 = -1, i1; i < n; ++i)switch(s[i]){
+        case ".":
+            i0 = i1 = i;
+            break;
+        case "0":
+            if (i0 === 0) i0 = i;
+            i1 = i;
+            break;
+        default:
+            if (!+s[i]) break out;
+            if (i0 > 0) i0 = 0;
+            break;
+    }
+    return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"8CE7u":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _formatDecimalJs = require("./formatDecimal.js");
+var _formatDecimalJsDefault = parcelHelpers.interopDefault(_formatDecimalJs);
+var _formatPrefixAutoJs = require("./formatPrefixAuto.js");
+var _formatPrefixAutoJsDefault = parcelHelpers.interopDefault(_formatPrefixAutoJs);
+var _formatRoundedJs = require("./formatRounded.js");
+var _formatRoundedJsDefault = parcelHelpers.interopDefault(_formatRoundedJs);
+exports.default = {
+    "%": (x, p)=>(x * 100).toFixed(p)
+    ,
+    "b": (x)=>Math.round(x).toString(2)
+    ,
+    "c": (x)=>x + ""
+    ,
+    "d": _formatDecimalJsDefault.default,
+    "e": (x, p)=>x.toExponential(p)
+    ,
+    "f": (x, p)=>x.toFixed(p)
+    ,
+    "g": (x, p)=>x.toPrecision(p)
+    ,
+    "o": (x)=>Math.round(x).toString(8)
+    ,
+    "p": (x, p)=>_formatRoundedJsDefault.default(x * 100, p)
+    ,
+    "r": _formatRoundedJsDefault.default,
+    "s": _formatPrefixAutoJsDefault.default,
+    "X": (x)=>Math.round(x).toString(16).toUpperCase()
+    ,
+    "x": (x)=>Math.round(x).toString(16)
+};
+
+},{"./formatDecimal.js":"eFLdP","./formatPrefixAuto.js":"4a8Al","./formatRounded.js":"lzDqS","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"4a8Al":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "prefixExponent", ()=>prefixExponent
+);
+var _formatDecimalJs = require("./formatDecimal.js");
+var prefixExponent;
+exports.default = function(x, p) {
+    var d = _formatDecimalJs.formatDecimalParts(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0], exponent = d[1], i = exponent - (prefixExponent = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1, n = coefficient.length;
+    return i === n ? coefficient : i > n ? coefficient + new Array(i - n + 1).join("0") : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i) : "0." + new Array(1 - i).join("0") + _formatDecimalJs.formatDecimalParts(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+};
+
+},{"./formatDecimal.js":"eFLdP","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"lzDqS":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _formatDecimalJs = require("./formatDecimal.js");
+exports.default = function(x, p) {
+    var d = _formatDecimalJs.formatDecimalParts(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0], exponent = d[1];
+    return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1) : coefficient + new Array(exponent - coefficient.length + 2).join("0");
+};
+
+},{"./formatDecimal.js":"eFLdP","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"dcSc8":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+exports.default = function(x) {
+    return x;
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"e3JIq":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _exponentJs = require("./exponent.js");
+var _exponentJsDefault = parcelHelpers.interopDefault(_exponentJs);
+exports.default = function(step) {
+    return Math.max(0, -_exponentJsDefault.default(Math.abs(step)));
+};
+
+},{"./exponent.js":"6DGHE","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"7GxX5":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _exponentJs = require("./exponent.js");
+var _exponentJsDefault = parcelHelpers.interopDefault(_exponentJs);
+exports.default = function(step, value) {
+    return Math.max(0, Math.max(-8, Math.min(8, Math.floor(_exponentJsDefault.default(value) / 3))) * 3 - _exponentJsDefault.default(Math.abs(step)));
+};
+
+},{"./exponent.js":"6DGHE","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"1ZF1R":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _exponentJs = require("./exponent.js");
+var _exponentJsDefault = parcelHelpers.interopDefault(_exponentJs);
+exports.default = function(step, max) {
+    step = Math.abs(step), max = Math.abs(max) - step;
+    return Math.max(0, _exponentJsDefault.default(max) - _exponentJsDefault.default(step)) + 1;
+};
+
+},{"./exponent.js":"6DGHE","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"5tplp":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$5b52 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -25452,9 +27462,9 @@ var _tmv = require("../../core/tmv/tmv");
 var _chart = require("./chart/chart");
 var _chartDefault = parcelHelpers.interopDefault(_chart);
 var _bootstrapModuleScss = require("../../styles/bootstrap.module.scss");
-var _customModuleScss = require("../../styles/custom.module.scss");
 var _tmvModuleScss = require("./tmv.module.scss");
 function TmvReport({ price , maxGreatPrice , maxFairPrice  }) {
+    if (!price || !maxGreatPrice || !maxFairPrice) return null;
     const value = _tmv.tmv.getValue({
         price,
         maxFairPrice,
@@ -25463,16 +27473,19 @@ function TmvReport({ price , maxGreatPrice , maxFairPrice  }) {
     return(/*#__PURE__*/ _jsxRuntime.jsxs("div", {
         __source: {
             fileName: "src/components/tmv/tmv.js",
-            lineNumber: 14,
+            lineNumber: 17,
             columnNumber: 5
         },
         __self: this,
         children: [
             /*#__PURE__*/ _jsxRuntime.jsx("span", {
-                className: _classnamesDefault.default(_bootstrapModuleScss['fs-6'], _bootstrapModuleScss['d-flex'], _bootstrapModuleScss['align-items-center'], _bootstrapModuleScss['justify-content-center'], _customModuleScss['size-20'], _bootstrapModuleScss['text-capitalize']),
+                className: _classnamesDefault.default(_bootstrapModuleScss['d-flex'], _bootstrapModuleScss['align-items-center'], _bootstrapModuleScss['justify-content-center'], _bootstrapModuleScss['text-capitalize']),
+                style: {
+                    fontSize: '16px'
+                },
                 __source: {
                     fileName: "src/components/tmv/tmv.js",
-                    lineNumber: 15,
+                    lineNumber: 18,
                     columnNumber: 7
                 },
                 __self: this,
@@ -25480,12 +27493,13 @@ function TmvReport({ price , maxGreatPrice , maxFairPrice  }) {
             }),
             /*#__PURE__*/ _jsxRuntime.jsxs("p", {
                 style: {
-                    color: _tmv.tmv.COLORS[value]
+                    color: _tmv.tmv.COLORS[value],
+                    fontSize: '20px'
                 },
-                className: _classnamesDefault.default(_bootstrapModuleScss['d-flex'], _bootstrapModuleScss['align-items-center'], _bootstrapModuleScss['justify-content-center'], _customModuleScss['size-20'], _bootstrapModuleScss['text-capitalize']),
+                className: _classnamesDefault.default(_bootstrapModuleScss['d-flex'], _bootstrapModuleScss['align-items-center'], _bootstrapModuleScss['justify-content-center'], _bootstrapModuleScss['text-capitalize']),
                 __source: {
                     fileName: "src/components/tmv/tmv.js",
-                    lineNumber: 27,
+                    lineNumber: 29,
                     columnNumber: 7
                 },
                 __self: this,
@@ -25501,7 +27515,7 @@ function TmvReport({ price , maxGreatPrice , maxFairPrice  }) {
                 maxGreatPrice: maxGreatPrice,
                 __source: {
                     fileName: "src/components/tmv/tmv.js",
-                    lineNumber: 39,
+                    lineNumber: 40,
                     columnNumber: 7
                 },
                 __self: this
@@ -25513,7 +27527,7 @@ function TmvReport({ price , maxGreatPrice , maxFairPrice  }) {
                 className: _classnamesDefault.default(_tmvModuleScss['edm-ext-tmv-text'], _bootstrapModuleScss['ps-2'], _bootstrapModuleScss['mt-4']),
                 __source: {
                     fileName: "src/components/tmv/tmv.js",
-                    lineNumber: 40,
+                    lineNumber: 41,
                     columnNumber: 7
                 },
                 __self: this,
@@ -25532,7 +27546,7 @@ $RefreshReg$(_c, "TmvReport");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-runtime":"6Ds2u","react":"4mchR","classnames":"2cVcN","../../core/tmv/tmv":"3id64","./chart/chart":"6AJ0y","../../styles/bootstrap.module.scss":"5tHoS","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"9pz13","./tmv.module.scss":"h2D3i","../../styles/custom.module.scss":"d82RX"}],"3id64":[function(require,module,exports) {
+},{"react/jsx-runtime":"6Ds2u","react":"4mchR","classnames":"2cVcN","../../core/tmv/tmv":"3id64","./chart/chart":"6AJ0y","../../styles/bootstrap.module.scss":"5tHoS","./tmv.module.scss":"h2D3i","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"9pz13"}],"3id64":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "tmv", ()=>tmv
@@ -26508,10 +28522,6 @@ $RefreshReg$(_c, "Chart");
 },{"react/jsx-runtime":"6Ds2u","react":"4mchR","classnames":"2cVcN","../../../styles/bootstrap.module.scss":"5tHoS","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"9pz13"}],"h2D3i":[function(require,module,exports) {
 module.exports["edm-ext-tmv-text"] = "_edm-ext-tmv-text_77eb55";
 
-},{}],"d82RX":[function(require,module,exports) {
-module.exports["p-2_5"] = "_p-2_5_3acdde";
-module.exports["size-20"] = "_size-20_3acdde";
-
 },{}],"brepH":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -26631,21 +28641,14 @@ function Inventory({ vehicle  }) {
             },
             __self: this,
             children: [
-                /*#__PURE__*/ _jsxRuntime.jsx("div", {
-                    className: _classnamesDefault.default(_bootstrapModuleScss['mt-1']),
+                /*#__PURE__*/ _jsxRuntime.jsxs("h3", {
+                    className: _classnamesDefault.default(_bootstrapModuleScss['text-black'], _bootstrapModuleScss['d-inline-block'], _bootstrapModuleScss['mb-0']),
+                    style: {
+                        fontSize: '24px'
+                    },
                     __source: {
                         fileName: "src/components/inventory/inventory.js",
                         lineNumber: 13,
-                        columnNumber: 9
-                    },
-                    __self: this,
-                    children: vehicle.status
-                }),
-                /*#__PURE__*/ _jsxRuntime.jsxs("h3", {
-                    className: _classnamesDefault.default(_bootstrapModuleScss['text-black'], _bootstrapModuleScss['d-inline-block'], _bootstrapModuleScss['mb-0'], _bootstrapModuleScss['fs-4']),
-                    __source: {
-                        fileName: "src/components/inventory/inventory.js",
-                        lineNumber: 14,
                         columnNumber: 9
                     },
                     __self: this,
@@ -26654,13 +28657,15 @@ function Inventory({ vehicle  }) {
                         " ",
                         vehicle.make,
                         " ",
-                        vehicle.model
+                        vehicle.model,
+                        " ",
+                        vehicle.trim
                     ]
                 }),
                 /*#__PURE__*/ _jsxRuntime.jsxs("div", {
                     __source: {
                         fileName: "src/components/inventory/inventory.js",
-                        lineNumber: 24,
+                        lineNumber: 25,
                         columnNumber: 9
                     },
                     __self: this,
@@ -26669,24 +28674,26 @@ function Inventory({ vehicle  }) {
                             className: _classnamesDefault.default(_bootstrapModuleScss['text-black']),
                             __source: {
                                 fileName: "src/components/inventory/inventory.js",
-                                lineNumber: 25,
+                                lineNumber: 26,
                                 columnNumber: 11
                             },
                             __self: this,
                             children: vehicle.style
                         }),
                         /*#__PURE__*/ _jsxRuntime.jsx("div", {
-                            className: _classnamesDefault.default(_bootstrapModuleScss.small),
                             __source: {
                                 fileName: "src/components/inventory/inventory.js",
-                                lineNumber: 26,
+                                lineNumber: 27,
                                 columnNumber: 11
                             },
                             __self: this,
                             children: /*#__PURE__*/ _jsxRuntime.jsxs("span", {
+                                style: {
+                                    fontSize: '14px'
+                                },
                                 __source: {
                                     fileName: "src/components/inventory/inventory.js",
-                                    lineNumber: 27,
+                                    lineNumber: 28,
                                     columnNumber: 13
                                 },
                                 __self: this,
@@ -26712,15 +28719,12 @@ $RefreshReg$(_c, "Inventory");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-runtime":"6Ds2u","react":"4mchR","classnames":"2cVcN","../../styles/bootstrap.module.scss":"5tHoS","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"9pz13","../../styles/custom.module.scss":"d82RX","./inventory.module.scss":"jrm8y"}],"jrm8y":[function(require,module,exports) {
+},{"react/jsx-runtime":"6Ds2u","react":"4mchR","classnames":"2cVcN","./inventory.module.scss":"jrm8y","../../styles/bootstrap.module.scss":"5tHoS","../../styles/custom.module.scss":"d82RX","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"9pz13"}],"jrm8y":[function(require,module,exports) {
 module.exports["edm-ext-inventory"] = "_edm-ext-inventory_4a1d5f";
 
-},{}],"870Yi":[function(require,module,exports) {
-module.exports["edm-ext-widget"] = "_edm-ext-widget_50d3b4";
-module.exports["edm-ext-widget_loading"] = "_edm-ext-widget_loading_50d3b4";
-module.exports["edm-ext-widget_main"] = "_edm-ext-widget_main_50d3b4";
-module.exports["edm-ext-floating"] = "_edm-ext-floating_50d3b4";
-module.exports["edm-ext-inventory"] = "_edm-ext-inventory_50d3b4";
+},{}],"d82RX":[function(require,module,exports) {
+module.exports["p-2_5"] = "_p-2_5_3acdde";
+module.exports["p-widget"] = "_p-widget_3acdde";
 
 },{}],"1lOrb":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$0a03 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
@@ -26742,24 +28746,32 @@ var _checkSvg = require("bundle-text:./check.svg");
 var _checkSvgDefault = parcelHelpers.interopDefault(_checkSvg);
 var _crossSvg = require("bundle-text:./cross.svg");
 var _crossSvgDefault = parcelHelpers.interopDefault(_crossSvg);
+var _reviewsModuleScss = require("./reviews.module.scss");
+var _reviewsModuleScssDefault = parcelHelpers.interopDefault(_reviewsModuleScss);
 var _bootstrapModuleScss = require("../../styles/bootstrap.module.scss");
 var _bootstrapModuleScssDefault = parcelHelpers.interopDefault(_bootstrapModuleScss);
-function Reviews({ reviews  }) {
-    const renderEditorial = ()=>{
-        if (!reviews.editorial) return null;
+function Review({ review  }) {
+    console.log(review);
+    if (!review) return null;
+    const renderDetails = ()=>{
+        if (!review.pros && !review.cons) return null;
         return(/*#__PURE__*/ _jsxRuntime.jsxs("ul", {
             __source: {
                 fileName: "src/components/reviews/reviews.js",
-                lineNumber: 17,
+                lineNumber: 24,
                 columnNumber: 7
             },
             __self: this,
             children: [
-                reviews.editorial.pros.map((text)=>/*#__PURE__*/ _jsxRuntime.jsxs("li", {
+                review?.pros.map((text)=>/*#__PURE__*/ _jsxRuntime.jsxs("li", {
                         className: _classnamesDefault.default(_bootstrapModuleScssDefault.default['d-flex'], _bootstrapModuleScssDefault.default['align-items-center'], _bootstrapModuleScssDefault.default['mb-2']),
+                        style: {
+                            fontSize: '16px',
+                            color: '#555'
+                        },
                         __source: {
                             fileName: "src/components/reviews/reviews.js",
-                            lineNumber: 19,
+                            lineNumber: 26,
                             columnNumber: 11
                         },
                         __self: this,
@@ -26771,7 +28783,7 @@ function Reviews({ reviews  }) {
                                 },
                                 __source: {
                                     fileName: "src/components/reviews/reviews.js",
-                                    lineNumber: 27,
+                                    lineNumber: 35,
                                     columnNumber: 13
                                 },
                                 __self: this
@@ -26780,12 +28792,16 @@ function Reviews({ reviews  }) {
                         ]
                     }, text)
                 ),
-                reviews.editorial.cons && reviews.editorial.cons.map((text)=>/*#__PURE__*/ _jsxRuntime.jsxs("li", {
+                review?.cons.map((text)=>/*#__PURE__*/ _jsxRuntime.jsxs("li", {
                         className: _classnamesDefault.default(_bootstrapModuleScssDefault.default['d-flex'], _bootstrapModuleScssDefault.default['align-items-center'], _bootstrapModuleScssDefault.default['mb-2']),
+                        style: {
+                            fontSize: '16px',
+                            color: '#555'
+                        },
                         __source: {
                             fileName: "src/components/reviews/reviews.js",
-                            lineNumber: 40,
-                            columnNumber: 13
+                            lineNumber: 47,
+                            columnNumber: 11
                         },
                         __self: this,
                         children: [
@@ -26796,8 +28812,8 @@ function Reviews({ reviews  }) {
                                 },
                                 __source: {
                                     fileName: "src/components/reviews/reviews.js",
-                                    lineNumber: 48,
-                                    columnNumber: 15
+                                    lineNumber: 56,
+                                    columnNumber: 13
                                 },
                                 __self: this
                             }),
@@ -26808,163 +28824,55 @@ function Reviews({ reviews  }) {
             ]
         }));
     };
-    const renderConsumers = ()=>{
-        if (!reviews.consumers) return null;
-        return(/*#__PURE__*/ _jsxRuntime.jsx("ul", {
-            __source: {
-                fileName: "src/components/reviews/reviews.js",
-                lineNumber: 69,
-                columnNumber: 7
-            },
-            __self: this,
-            children: reviews.consumers.map((review)=>/*#__PURE__*/ _jsxRuntime.jsxs("li", {
-                    className: _classnamesDefault.default(_bootstrapModuleScssDefault.default['mb-2']),
-                    __source: {
-                        fileName: "src/components/reviews/reviews.js",
-                        lineNumber: 71,
-                        columnNumber: 11
-                    },
-                    __self: this,
-                    children: [
-                        /*#__PURE__*/ _jsxRuntime.jsxs("div", {
-                            className: _classnamesDefault.default(_bootstrapModuleScssDefault.default['d-flex'], _bootstrapModuleScssDefault.default['align-items-center']),
-                            __source: {
-                                fileName: "src/components/reviews/reviews.js",
-                                lineNumber: 72,
-                                columnNumber: 13
-                            },
-                            __self: this,
-                            children: [
-                                /*#__PURE__*/ _jsxRuntime.jsx(_reactStarsDefault.default, {
-                                    size: 16,
-                                    count: 5,
-                                    value: review.rating,
-                                    edit: false,
-                                    color1: '#a3a3a3',
-                                    color2: '#0069bf',
-                                    className: _bootstrapModuleScssDefault.default['pe-1'],
-                                    __source: {
-                                        fileName: "src/components/reviews/reviews.js",
-                                        lineNumber: 73,
-                                        columnNumber: 15
-                                    },
-                                    __self: this
-                                }),
-                                /*#__PURE__*/ _jsxRuntime.jsx("span", {
-                                    style: {
-                                        color: '#0069bf'
-                                    },
-                                    className: _classnamesDefault.default(_bootstrapModuleScssDefault.default['fw-bolder']),
-                                    __source: {
-                                        fileName: "src/components/reviews/reviews.js",
-                                        lineNumber: 82,
-                                        columnNumber: 15
-                                    },
-                                    __self: this,
-                                    children: review.short
-                                })
-                            ]
-                        }),
-                        /*#__PURE__*/ _jsxRuntime.jsxs("div", {
-                            style: {
-                                color: '#767676',
-                                fontSize: '12px'
-                            },
-                            className: _classnamesDefault.default(_bootstrapModuleScssDefault.default['d-flex'], _bootstrapModuleScssDefault.default['align-items-center'], _bootstrapModuleScssDefault.default['mb-2']),
-                            __source: {
-                                fileName: "src/components/reviews/reviews.js",
-                                lineNumber: 86,
-                                columnNumber: 13
-                            },
-                            __self: this,
-                            children: [
-                                /*#__PURE__*/ _jsxRuntime.jsxs("span", {
-                                    __source: {
-                                        fileName: "src/components/reviews/reviews.js",
-                                        lineNumber: 94,
-                                        columnNumber: 15
-                                    },
-                                    __self: this,
-                                    children: [
-                                        review.name,
-                                        ", "
-                                    ]
-                                }),
-                                /*#__PURE__*/ _jsxRuntime.jsx("span", {
-                                    __source: {
-                                        fileName: "src/components/reviews/reviews.js",
-                                        lineNumber: 95,
-                                        columnNumber: 15
-                                    },
-                                    __self: this,
-                                    children: review.date
-                                })
-                            ]
-                        }),
-                        /*#__PURE__*/ _jsxRuntime.jsx("p", {
-                            __source: {
-                                fileName: "src/components/reviews/reviews.js",
-                                lineNumber: 97,
-                                columnNumber: 13
-                            },
-                            __self: this,
-                            children: review.text
-                        })
-                    ]
-                }, review.name)
-            )
-        }));
-    };
     return(/*#__PURE__*/ _jsxRuntime.jsxs("div", {
         __source: {
             fileName: "src/components/reviews/reviews.js",
-            lineNumber: 105,
+            lineNumber: 72,
             columnNumber: 5
         },
         __self: this,
         children: [
             /*#__PURE__*/ _jsxRuntime.jsx("h4", {
-                className: _classnamesDefault.default(_bootstrapModuleScssDefault.default['mb-2'], _bootstrapModuleScssDefault.default['fs-5']),
+                className: _classnamesDefault.default(_bootstrapModuleScssDefault.default['mb-2']),
+                style: {
+                    fontSize: '20px',
+                    color: '#333'
+                },
                 __source: {
                     fileName: "src/components/reviews/reviews.js",
-                    lineNumber: 106,
+                    lineNumber: 73,
                     columnNumber: 7
                 },
                 __self: this,
                 children: "Edmunds Experts Review:"
             }),
-            renderEditorial(),
-            /*#__PURE__*/ _jsxRuntime.jsx("h4", {
-                className: _classnamesDefault.default(_bootstrapModuleScssDefault.default['mb-2'], _bootstrapModuleScssDefault.default['mt-4'], _bootstrapModuleScssDefault.default['fs-5']),
+            renderDetails(),
+            /*#__PURE__*/ _jsxRuntime.jsx("div", {
+                dangerouslySetInnerHTML: {
+                    __html: review.summary
+                },
+                className: (_bootstrapModuleScssDefault.default['fs-6'], _bootstrapModuleScssDefault.default['mt-2'], _reviewsModuleScssDefault.default.reviews_summary),
                 __source: {
                     fileName: "src/components/reviews/reviews.js",
-                    lineNumber: 110,
+                    lineNumber: 77,
                     columnNumber: 7
                 },
-                __self: this,
-                children: "Consumer Reviews:"
-            }),
-            renderConsumers()
+                __self: this
+            })
         ]
     }));
 }
-_c = Reviews;
-exports.default = Reviews;
+_c = Review;
+exports.default = Review;
 var _c;
-$RefreshReg$(_c, "Reviews");
+$RefreshReg$(_c, "Review");
 
   $parcel$ReactRefreshHelpers$0a03.postlude(module);
 } finally {
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-runtime":"6Ds2u","react":"4mchR","classnames":"2cVcN","bundle-text:./check.svg":"6mqVa","bundle-text:./cross.svg":"9sNwq","../../styles/bootstrap.module.scss":"5tHoS","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"9pz13","react-stars":"94T4B"}],"6mqVa":[function(require,module,exports) {
-module.exports = "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\r\n<!-- Generator: Adobe Illustrator 21.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\r\n<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 80.588 61.158\" xml:space=\"preserve\" width=\"12px\" height=\"12px\">\r\n<path fill=\"#007ee5\" d=\"M29.658,61.157c-1.238,0-2.427-0.491-3.305-1.369L1.37,34.808c-1.826-1.825-1.826-4.785,0-6.611\r\n\tc1.825-1.826,4.786-1.827,6.611,0l21.485,21.481L72.426,1.561c1.719-1.924,4.674-2.094,6.601-0.374\r\n\tc1.926,1.72,2.094,4.675,0.374,6.601L33.145,59.595c-0.856,0.959-2.07,1.523-3.355,1.56C29.746,61.156,29.702,61.157,29.658,61.157z\r\n\t\"></path>\r\n</svg>\r\n";
-
-},{}],"9sNwq":[function(require,module,exports) {
-module.exports = "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\r\n<!-- Generator: Adobe Illustrator 21.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\r\n<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 60.963 60.842\" xml:space=\"preserve\" width=\"12px\" height=\"12px\">\r\n<path fill=\"#f59442\" d=\"M59.595,52.861L37.094,30.359L59.473,7.98c1.825-1.826,1.825-4.786,0-6.611\r\n\tc-1.826-1.825-4.785-1.825-6.611,0L30.483,23.748L8.105,1.369c-1.826-1.825-4.785-1.825-6.611,0c-1.826,1.826-1.826,4.786,0,6.611\r\n\tl22.378,22.379L1.369,52.861c-1.826,1.826-1.826,4.785,0,6.611c0.913,0.913,2.109,1.369,3.306,1.369s2.393-0.456,3.306-1.369\r\n\tl22.502-22.502l22.501,22.502c0.913,0.913,2.109,1.369,3.306,1.369s2.393-0.456,3.306-1.369\r\n\tC61.42,57.647,61.42,54.687,59.595,52.861z\"></path>\r\n</svg>\r\n";
-
-},{}],"94T4B":[function(require,module,exports) {
+},{"react/jsx-runtime":"6Ds2u","react":"4mchR","classnames":"2cVcN","react-stars":"94T4B","bundle-text:./check.svg":"6mqVa","bundle-text:./cross.svg":"9sNwq","../../styles/bootstrap.module.scss":"5tHoS","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"9pz13","./reviews.module.scss":"eZcMu"}],"94T4B":[function(require,module,exports) {
 'use strict';
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -27930,6 +29838,22 @@ printWarning = function(text) {
 };
 module.exports = checkPropTypes;
 
-},{"./lib/ReactPropTypesSecret":"bQ0BL"}]},["emU3S","lBB98","hD4hw"], "hD4hw", "parcelRequire606f")
+},{"./lib/ReactPropTypesSecret":"bQ0BL"}],"6mqVa":[function(require,module,exports) {
+module.exports = "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\r\n<!-- Generator: Adobe Illustrator 21.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\r\n<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 80.588 61.158\" xml:space=\"preserve\" width=\"12px\" height=\"12px\">\r\n<path fill=\"#007ee5\" d=\"M29.658,61.157c-1.238,0-2.427-0.491-3.305-1.369L1.37,34.808c-1.826-1.825-1.826-4.785,0-6.611\r\n\tc1.825-1.826,4.786-1.827,6.611,0l21.485,21.481L72.426,1.561c1.719-1.924,4.674-2.094,6.601-0.374\r\n\tc1.926,1.72,2.094,4.675,0.374,6.601L33.145,59.595c-0.856,0.959-2.07,1.523-3.355,1.56C29.746,61.156,29.702,61.157,29.658,61.157z\r\n\t\"></path>\r\n</svg>\r\n";
+
+},{}],"9sNwq":[function(require,module,exports) {
+module.exports = "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\r\n<!-- Generator: Adobe Illustrator 21.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\r\n<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 60.963 60.842\" xml:space=\"preserve\" width=\"12px\" height=\"12px\">\r\n<path fill=\"#f59442\" d=\"M59.595,52.861L37.094,30.359L59.473,7.98c1.825-1.826,1.825-4.786,0-6.611\r\n\tc-1.826-1.825-4.785-1.825-6.611,0L30.483,23.748L8.105,1.369c-1.826-1.825-4.785-1.825-6.611,0c-1.826,1.826-1.826,4.786,0,6.611\r\n\tl22.378,22.379L1.369,52.861c-1.826,1.826-1.826,4.785,0,6.611c0.913,0.913,2.109,1.369,3.306,1.369s2.393-0.456,3.306-1.369\r\n\tl22.502-22.502l22.501,22.502c0.913,0.913,2.109,1.369,3.306,1.369s2.393-0.456,3.306-1.369\r\n\tC61.42,57.647,61.42,54.687,59.595,52.861z\"></path>\r\n</svg>\r\n";
+
+},{}],"eZcMu":[function(require,module,exports) {
+module.exports["reviews_summary"] = "_reviews_summary_7f2e0a";
+
+},{}],"870Yi":[function(require,module,exports) {
+module.exports["edm-ext-widget"] = "_edm-ext-widget_50d3b4";
+module.exports["edm-ext-widget_loading"] = "_edm-ext-widget_loading_50d3b4";
+module.exports["edm-ext-widget_main"] = "_edm-ext-widget_main_50d3b4";
+module.exports["edm-ext-floating"] = "_edm-ext-floating_50d3b4";
+module.exports["edm-ext-inventory"] = "_edm-ext-inventory_50d3b4";
+
+},{}]},["emU3S","lBB98","hD4hw"], "hD4hw", "parcelRequire606f")
 
 //# sourceMappingURL=index.379dd93c.js.map

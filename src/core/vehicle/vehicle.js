@@ -3,6 +3,8 @@ const REGEXP_TEST_VIN = /[^\Wioq]{17}/;
 const REGEXP_MATCH_VIN = /[^\Wioq]{17}/g;
 const REGEXP_CONTENT_VIN = />([^\Wioq<]{17})</gi;
 
+const REGEXP_CONTENT_PRICE = /\$([\d,]+)/gm;
+
 /**
  *
  * @param {array} values
@@ -122,6 +124,30 @@ const getContentVins = () => {
   return result;
 };
 
+const getContentPrice = () => {
+  REGEXP_CONTENT_PRICE.lastIndex = 0;
+
+  const contentText = document.body.innerHTML;
+  const result = [];
+
+  let match;
+
+  // eslint-disable-next-line no-cond-assign
+  while ((match = REGEXP_CONTENT_PRICE.exec(contentText)) !== null) {
+    // This is necessary to avoid infinite loops with zero-width matches
+    if (match.index === REGEXP_CONTENT_PRICE.lastIndex) {
+      REGEXP_CONTENT_PRICE.lastIndex += 1;
+    }
+
+    // if we match smth
+    if (match[1]) {
+      result.push(match[1]);
+    }
+  }
+
+  return result;
+};
+
 const getPageTitleVIN = () => {
   const VINs = document.title.match(REGEXP_MATCH_VIN);
   return VINs && VINs.length === 1 ? VINs[0] : null;
@@ -143,10 +169,34 @@ function getPageVin() {
 }
 
 function getTitle(inventory) {
-  return `${inventory.status} ${inventory.year} ${inventory.make} ${inventory.model}`;
+  return `${inventory.year} ${inventory.make} ${inventory.model} ${inventory.trim}`;
+}
+
+function getEdmundsVdp(vehicle) {
+  let source = '';
+
+  if (!vehicle || !vehicle.make || !vehicle.model || !vehicle.year || !vehicle.vin) {
+    return null;
+  }
+
+  source = (
+    'https://www.edmunds.com/' +
+    vehicle.make.toLowerCase() +
+    '/' +
+    vehicle.model.toLowerCase() +
+    '/' +
+    vehicle.year +
+    '/vin/' +
+    vehicle.vin.toUpperCase() +
+    '/'
+  ).replace(/\s/g, '-');
+
+  return source + '?utm_source=edm_ext';
 }
 
 export const vehicle = {
   getPageVin,
-  getTitle
+  getTitle,
+  getContentPrice,
+  getEdmundsVdp
 };
